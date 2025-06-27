@@ -1,0 +1,134 @@
+/* Reset muy ligero */
+*, *::before, *::after { 
+    box-sizing:border-box; 
+    margin:0; 
+    padding:0;
+ }
+
+body { 
+    font-family: system-ui, sans-serif; height:100vh; 
+    line-height:1.5; 
+}
+
+.layout { 
+    display:flex; 
+    height:100%; 
+}
+
+/* --- Barra lateral --- */
+.sidebar { 
+    width:240px; 
+    background:#2d3748; 
+    color:#f7fafc; 
+    overflow-y:auto;
+    transition:transform .3s ease; 
+ }
+
+.sidebar.collapsed { transform:translateX(-100%); }
+
+.sidebar-brand { padding:1rem; background:#1a202c; font-weight:700; }
+
+/* Menú — acordeón */
+.menu ul { list-style:none; }
+.menu-item { border-top:1px solid rgba(255,255,255,.1); }
+
+.accordion { width:100%; background:none; border:none; color:inherit;
+             padding:.75rem 1rem; text-align:left; cursor:pointer; font-weight:600; }
+
+.submenu { height:0; overflow:hidden; background:#4a5568; transition:height .25s ease; }
+.submenu a { display:block; padding:.5rem 1.5rem; color:#e2e8f0; text-decoration:none; }
+.submenu a:hover { background:rgba(255,255,255,.08); }
+.menu a.active { background:#4c51bf; color:#fff; }
+
+/* --- Contenedor principal --- */
+.main { flex:1 1 auto; display:flex; flex-direction:column; }
+
+.main-header, .main-footer { background:#edf2f7; padding:1rem; }
+
+.main-header { display:flex; align-items:center; gap:1rem; }
+
+.hamburger { font-size:1.5rem; background:none; border:none; cursor:pointer; }
+
+/* Área de contenido crece para ocupar el espacio restante */
+.content { flex:1 1 auto; padding:1rem; }
+
+/* --- Responsive --- */
+@media (min-width:769px) {
+    .hamburger { display:none; }      /* Oculta hamburguesa en escritorio */
+    .sidebar.collapsed { transform:none; }
+}
+
+@media (max-width:768px) {
+    .sidebar { position:fixed; top:0; left:0; height:100%; z-index:1000; }
+    /* Cuando la sidebar está colapsada no invade espacio */
+    .sidebar.collapsed + .main { margin-left:0; }
+}
+
+/* ============================================================================
+   Bloque de estilos exclusivo para la página de login
+   ========================================================================== */
+.login-wrapper {                     /* Envuelve todo el login */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100%;
+    background:#f7fafc;
+}
+
+.login-box {                         /* Tarjeta */
+    width:100%;
+    max-width:420px;
+    padding:2rem 1.5rem;
+    background:#fff;
+    border-radius:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+
+.login-title {
+    font-size:1.5rem;
+    font-weight:700;
+    margin-bottom:1.5rem;
+    text-align:center;
+    color:#2d3748;
+}
+
+.login-form .field { margin-bottom:1rem; }
+
+.login-form label {
+    display:block;
+    font-weight:600;
+    margin-bottom:.25rem;
+    color:#2d3748;
+}
+
+.login-form input {
+    width:100%;
+    padding:.5rem .75rem;
+    border:1px solid #cbd5e0;
+    border-radius:4px;
+}
+.login-form input:focus {
+    outline:2px solid #4c51bf;
+    border-color:#4c51bf;
+}
+
+.btn-primary {                       /* Botón reutilizable */
+    display:block;
+    width:100%;
+    padding:.75rem;
+    background:#4c51bf;
+    color:#fff;
+    font-weight:700;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+}
+.btn-primary:hover { background:#4338ca; }
+
+.error  { color:#e53e3e; font-size:.875rem; margin-top:.25rem; }
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+.imagen-prueba { 
+    width: 300px; 
+}
+

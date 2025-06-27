@@ -1,0 +1,140 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "MyRepo API",
+        "description": "Documentación generada con l5-swagger",
+        "contact": {
+            "email": "soporte@midominio.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://myrepo.test",
+            "description": "Servidor local"
+        }
+    ],
+    "paths": {
+        "/api/documentos": {
+            "get": {
+                "tags": [
+                    "Documentos"
+                ],
+                "summary": "Listar documentos paginados",
+                "operationId": "f2d99bf6d92add5d1b3d72ba30e6f0fd",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Cantidad de documentos por página",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada de documentos"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Documentos"
+                ],
+                "summary": "Subir archivo",
+                "operationId": "141b5011e5a4f9b0191cfc74cbd18234",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "titulo"
+                                ],
+                                "properties": {
+                                    "titulo": {
+                                        "type": "string"
+                                    },
+                                    "imagen": {
+                                        "type": "file",
+                                        "format": "binary"
+                                    },
+                                    "archivo": {
+                                        "type": "file",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado"
+                    }
+                }
+            }
+        },
+        "/api/documentos/{id}": {
+            "get": {
+                "tags": [
+                    "Documentos"
+                ],
+                "summary": "Mostrar un documento",
+                "operationId": "82bdd2d2b13e38b7eb82c620ab0288ba",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Documento encontrado"
+                    },
+                    "404": {
+                        "description": "Documento no encontrado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Documentos"
+                ],
+                "summary": "Eliminar documento",
+                "operationId": "402a908e5990df8627c392cc04d0227f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Documento eliminado"
+                    },
+                    "404": {
+                        "description": "Documento no encontrado"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Documentos",
+            "description": "Documentos"
+        }
+    ]
+}
