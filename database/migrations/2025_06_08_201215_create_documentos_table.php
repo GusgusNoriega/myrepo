@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('titulo');
             $table->text('descripcion')->nullable();
+            $table->string('tipo', 10)->default('otro');   // ← NUEVA LÍNEA
+            $table->string('ruta', 255)->nullable();   // ← NUEVA COLUMNA
             $table->timestamps();
         });
     }

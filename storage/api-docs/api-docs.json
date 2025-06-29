@@ -26,10 +26,58 @@
                     {
                         "name": "per_page",
                         "in": "query",
-                        "description": "Cantidad de documentos por página",
-                        "required": false,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "default": 10
+                        }
+                    },
+                    {
+                        "name": "buscar",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tipo",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "imagen",
+                                "pdf",
+                                "doc",
+                                "docx",
+                                "otro"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "fecha_desde",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "fecha_hasta",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "ordenar",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "default": "desc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
                         }
                     }
                 ],
@@ -44,7 +92,7 @@
                     "Documentos"
                 ],
                 "summary": "Subir archivo",
-                "operationId": "141b5011e5a4f9b0191cfc74cbd18234",
+                "operationId": "feea9dd8a9ce6d6b0d60d91979815e5b",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -56,6 +104,13 @@
                                 "properties": {
                                     "titulo": {
                                         "type": "string"
+                                    },
+                                    "descripcion": {
+                                        "type": "string"
+                                    },
+                                    "ruta": {
+                                        "type": "string",
+                                        "example": "/storage/archivos/123/contrato.pdf"
                                     },
                                     "imagen": {
                                         "type": "file",

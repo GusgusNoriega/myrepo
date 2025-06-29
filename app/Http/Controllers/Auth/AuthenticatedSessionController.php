@@ -33,9 +33,6 @@ class AuthenticatedSessionController extends Controller
         // === Extra: genera el token de Passport ======================
         
 
-       // 1. Generar token
-        $tokenResult = $request->user()->createToken('web');
-
         // 2. Guardar SÓLO la cadena JWT
         $request->session()->put('api_token', $tokenResult->accessToken);
 

@@ -12,11 +12,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
-
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+       // 1) Limpiar archivos
+       $this->call(MediaCleanupSeeder::class);
+       // 2) actualiza token de passport
+       $this->call(PassportSeeder::class);
+       // 3) crea super usuario
+       $this->call(AdminUserSeeder::class);
+      
     }
 }

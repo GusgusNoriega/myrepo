@@ -12,7 +12,7 @@ class Documento extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
-    protected $fillable = ['titulo', 'descripcion'];
+    protected $fillable = ['titulo', 'descripcion', 'tipo', 'ruta'];
 
     public function registerMediaCollections(): void
     {
@@ -21,7 +21,7 @@ class Documento extends Model implements HasMedia
             ->acceptsMimeTypes(['image/jpeg','image/png']);
 
         $this->addMediaCollection('archivos')
-            ->useDisk('private')
+            ->useDisk('public')
             ->acceptsMimeTypes(['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
     }
 
