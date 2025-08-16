@@ -10,6 +10,7 @@
 
     <title>{{ config('app.name') }}</title>
     @vite(['resources/css/style.css'])
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
     @yield('content')

@@ -9,6 +9,7 @@
     @endauth
     <title>@yield('title', 'Panel') – Mi Sistema</title>
     @vite(['resources/css/style.css', 'resources/js/main.js'])
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
 <div class="layout">

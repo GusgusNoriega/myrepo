@@ -15,110 +15,309 @@
         }
     ],
     "paths": {
-        "/api/documentos": {
-            "get": {
+        "/api/admin/users/{user}/roles": {
+            "put": {
                 "tags": [
-                    "Documentos"
+                    "Admin - ACL"
                 ],
-                "summary": "Listar documentos paginados",
-                "operationId": "f2d99bf6d92add5d1b3d72ba30e6f0fd",
+                "summary": "Sincronizar roles de un usuario (reemplaza todos)",
+                "description": "Asigna/sincroniza roles (guard web) a un usuario.",
+                "operationId": "ece514e68f16fbf148c5663103eca155",
                 "parameters": [
                     {
-                        "name": "per_page",
-                        "in": "query",
+                        "name": "user",
+                        "in": "path",
+                        "description": "ID del usuario objetivo",
+                        "required": true,
                         "schema": {
-                            "type": "integer",
-                            "default": 10
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Lista completa de nombres de roles que el usuario debe tener (guard web).",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "items"
+                                ],
+                                "properties": {
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "admin",
+                                            "editor"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 7
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Jane Doe"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "format": "email",
+                                            "example": "jane@example.com"
+                                        },
+                                        "roles": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "admin",
+                                                "editor"
+                                            ]
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
                         }
                     },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "Usuario no encontrado"
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    }
+                },
+                "security": [
                     {
-                        "name": "buscar",
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/users/{user}/permissions": {
+            "put": {
+                "tags": [
+                    "Admin - ACL"
+                ],
+                "summary": "Sincronizar permisos directos de un usuario (reemplaza todos)",
+                "description": "Asigna/sincroniza permisos (guard web) directos a un usuario.",
+                "operationId": "f81d17c381d489dd775c416c2282fa6b",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "ID del usuario objetivo",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Lista completa de nombres de permisos que el usuario debe tener (guard web).",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "items"
+                                ],
+                                "properties": {
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "posts.view",
+                                            "posts.create"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 7
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Jane Doe"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "format": "email",
+                                            "example": "jane@example.com"
+                                        },
+                                        "permissions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "example": [
+                                                "posts.view",
+                                                "posts.create"
+                                            ]
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "Usuario no encontrado"
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/permissions": {
+            "get": {
+                "tags": [
+                    "Admin - ACL"
+                ],
+                "operationId": "02d5289d86c9a86f7534eb2a054ca6f8",
+                "parameters": [
+                    {
+                        "name": "search",
                         "in": "query",
                         "schema": {
                             "type": "string"
-                        }
-                    },
-                    {
-                        "name": "tipo",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "enum": [
-                                "imagen",
-                                "pdf",
-                                "doc",
-                                "docx",
-                                "otro"
-                            ]
-                        }
-                    },
-                    {
-                        "name": "fecha_desde",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    },
-                    {
-                        "name": "fecha_hasta",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    },
-                    {
-                        "name": "ordenar",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "default": "desc",
-                            "enum": [
-                                "asc",
-                                "desc"
-                            ]
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Lista paginada de documentos"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "guard_name": {
+                                                        "type": "string",
+                                                        "example": "web"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "nullable": true
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "nullable": true
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 0
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 0
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "post": {
                 "tags": [
-                    "Documentos"
+                    "Admin - ACL"
                 ],
-                "summary": "Subir archivo",
-                "operationId": "feea9dd8a9ce6d6b0d60d91979815e5b",
+                "operationId": "0fb1f609f0ecece740fea48416bef2f1",
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "multipart/form-data": {
+                        "application/json": {
                             "schema": {
                                 "required": [
-                                    "titulo"
+                                    "name"
                                 ],
                                 "properties": {
-                                    "titulo": {
-                                        "type": "string"
-                                    },
-                                    "descripcion": {
-                                        "type": "string"
-                                    },
-                                    "ruta": {
+                                    "name": {
                                         "type": "string",
-                                        "example": "/storage/archivos/123/contrato.pdf"
-                                    },
-                                    "imagen": {
-                                        "type": "file",
-                                        "format": "binary"
-                                    },
-                                    "archivo": {
-                                        "type": "file",
-                                        "format": "binary"
+                                        "example": "orders.update"
                                     }
                                 },
                                 "type": "object"
@@ -128,21 +327,54 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Creado"
+                        "description": "Creado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "guard_name": {
+                                            "type": "string",
+                                            "example": "web"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
-        "/api/documentos/{id}": {
+        "/api/admin/permissions/{permission}": {
             "get": {
                 "tags": [
-                    "Documentos"
+                    "Admin - ACL"
                 ],
-                "summary": "Mostrar un documento",
-                "operationId": "82bdd2d2b13e38b7eb82c620ab0288ba",
+                "operationId": "6799dc908d0fed9a308156a98e0f6b7e",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "permission",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -152,22 +384,52 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Documento encontrado"
-                    },
-                    "404": {
-                        "description": "Documento no encontrado"
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "guard_name": {
+                                            "type": "string",
+                                            "example": "web"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "delete": {
                 "tags": [
-                    "Documentos"
+                    "Admin - ACL"
                 ],
-                "summary": "Eliminar documento",
-                "operationId": "402a908e5990df8627c392cc04d0227f",
+                "operationId": "db011ac26ef40ba2eef49be54aa29e8c",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "permission",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -177,19 +439,1258 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": "Documento eliminado"
+                        "description": "Eliminado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Admin - ACL"
+                ],
+                "operationId": "db8be9a9c23e0792d7de31991ac80319",
+                "parameters": [
+                    {
+                        "name": "permission",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "orders.manage"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "guard_name": {
+                                            "type": "string",
+                                            "example": "web"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/plans": {
+            "get": {
+                "tags": [
+                    "Admin - Plans"
+                ],
+                "summary": "Listado de planes (paginado).",
+                "operationId": "AdminPlansIndex",
+                "parameters": [
+                    {
+                        "name": "active",
+                        "in": "query",
+                        "description": "Filtrar por estado activo (1/0)",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Buscar por code/name (like)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Tamaño de página (default 20)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 20
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Página a consultar",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlanIndexResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado (requiere rol admin)"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - Plans"
+                ],
+                "summary": "Crear un nuevo plan.",
+                "operationId": "AdminPlansStore",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PlanStoreRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Plan"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/plans/{plan}": {
+            "get": {
+                "tags": [
+                    "Admin - Plans"
+                ],
+                "summary": "Mostrar un plan por ID.",
+                "operationId": "AdminPlansShow",
+                "parameters": [
+                    {
+                        "name": "plan",
+                        "in": "path",
+                        "description": "ID del plan",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Plan"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
                     },
                     "404": {
-                        "description": "Documento no encontrado"
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Plans"
+                ],
+                "summary": "Eliminar un plan.",
+                "operationId": "AdminPlansDestroy",
+                "parameters": [
+                    {
+                        "name": "plan",
+                        "in": "path",
+                        "description": "ID del plan",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Eliminado"
+                    },
+                    "409": {
+                        "description": "Conflicto: hay suscripciones asociadas",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No se puede eliminar el plan porque tiene suscripciones asociadas."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Admin - Plans"
+                ],
+                "summary": "Actualizar un plan existente.",
+                "operationId": "AdminPlansUpdate",
+                "parameters": [
+                    {
+                        "name": "plan",
+                        "in": "path",
+                        "description": "ID del plan",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PlanUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Plan"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/roles": {
+            "get": {
+                "tags": [
+                    "Admin - ACL"
+                ],
+                "operationId": "2af0a74e89a916dd65550cb1ff927c18",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 25
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "guard_name": {
+                                                        "type": "string",
+                                                        "example": "web"
+                                                    },
+                                                    "permissions": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "name": {
+                                                                    "type": "string"
+                                                                },
+                                                                "guard_name": {
+                                                                    "type": "string",
+                                                                    "example": "web"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "nullable": true
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "nullable": true
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - ACL"
+                ],
+                "operationId": "811df9a4fd01b110d9ae33803b064cd3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "editor"
+                                    },
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "posts.view",
+                                            "posts.create"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "guard_name": {
+                                            "type": "string",
+                                            "example": "web"
+                                        },
+                                        "permissions": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "guard_name": {
+                                                        "type": "string",
+                                                        "example": "web"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/roles/{role}": {
+            "get": {
+                "tags": [
+                    "Admin - ACL"
+                ],
+                "operationId": "98421a56365abe98dcc00ef4976daf31",
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "guard_name": {
+                                            "type": "string",
+                                            "example": "web"
+                                        },
+                                        "permissions": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "guard_name": {
+                                                        "type": "string",
+                                                        "example": "web"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin - ACL"
+                ],
+                "operationId": "4bac991cae74b1814ee2c4c1e2178027",
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Eliminado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Admin - ACL"
+                ],
+                "operationId": "3ea41d6e518c868c65cc031ba53f632c",
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "editor-plus"
+                                    },
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "guard_name": {
+                                            "type": "string",
+                                            "example": "web"
+                                        },
+                                        "permissions": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "guard_name": {
+                                                        "type": "string",
+                                                        "example": "web"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/roles/{role}/permissions": {
+            "put": {
+                "tags": [
+                    "Admin - ACL"
+                ],
+                "operationId": "3fffbf2f18781189039a15543f8ca1fa",
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "items"
+                                ],
+                                "properties": {
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "posts.view",
+                                            "posts.create"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "guard_name": {
+                                            "type": "string",
+                                            "example": "web"
+                                        },
+                                        "permissions": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "guard_name": {
+                                                        "type": "string",
+                                                        "example": "web"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Emitir un access token (Passport PAT) usando email/clave",
+                "operationId": "a46b32f1be09aefe1f2f558867e823aa",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "gusgusnoriega@gmail.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "********"
+                                    },
+                                    "device_name": {
+                                        "type": "string",
+                                        "example": "swagger"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "format": "email"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Credenciales inválidas"
+                    },
+                    "422": {
+                        "description": "Validación fallida"
                     }
                 }
+            }
+        },
+        "/api/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Retorna el usuario autenticado (guard api)",
+                "operationId": "11852f81908f58ef8a94f5e94dcc6427",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "format": "email"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Revoca el token actual",
+                "operationId": "edfe0abab0ba40e51d520a0c7dab6f0b",
+                "responses": {
+                    "204": {
+                        "description": "Sin contenido"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "PlanFeature": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "plan_id": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "product_limit": {
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "storage_limit_bytes": {
+                        "type": "integer",
+                        "example": 1073741824
+                    },
+                    "staff_limit": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "asset_limit": {
+                        "type": "integer",
+                        "example": 1000,
+                        "nullable": true
+                    },
+                    "category_limit": {
+                        "type": "integer",
+                        "example": 50,
+                        "nullable": true
+                    },
+                    "other": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Plan": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "code": {
+                        "type": "string",
+                        "example": "starter"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Starter"
+                    },
+                    "price_usd": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 9
+                    },
+                    "billing_interval": {
+                        "type": "string",
+                        "enum": [
+                            "month",
+                            "year"
+                        ],
+                        "example": "month"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "features": {
+                        "$ref": "#/components/schemas/PlanFeature"
+                    }
+                },
+                "type": "object"
+            },
+            "PlanStoreRequest": {
+                "required": [
+                    "code",
+                    "name",
+                    "price_usd",
+                    "billing_interval",
+                    "features"
+                ],
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "example": "starter"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Starter"
+                    },
+                    "price_usd": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 9
+                    },
+                    "billing_interval": {
+                        "type": "string",
+                        "enum": [
+                            "month",
+                            "year"
+                        ],
+                        "example": "month"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "features": {
+                        "required": [
+                            "product_limit",
+                            "storage_limit_bytes",
+                            "staff_limit"
+                        ],
+                        "properties": {
+                            "product_limit": {
+                                "type": "integer",
+                                "example": 100
+                            },
+                            "storage_limit_bytes": {
+                                "type": "integer",
+                                "example": 1073741824
+                            },
+                            "staff_limit": {
+                                "type": "integer",
+                                "example": 3
+                            },
+                            "asset_limit": {
+                                "type": "integer",
+                                "example": 1000,
+                                "nullable": true
+                            },
+                            "category_limit": {
+                                "type": "integer",
+                                "example": 50,
+                                "nullable": true
+                            },
+                            "other": {
+                                "type": "object",
+                                "example": {
+                                    "support": "email"
+                                },
+                                "nullable": true
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "PlanUpdateRequest": {
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "example": "starter"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Starter Plus"
+                    },
+                    "price_usd": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 12
+                    },
+                    "billing_interval": {
+                        "type": "string",
+                        "enum": [
+                            "month",
+                            "year"
+                        ]
+                    },
+                    "is_active": {
+                        "type": "boolean"
+                    },
+                    "features": {
+                        "properties": {
+                            "product_limit": {
+                                "type": "integer",
+                                "example": 200
+                            },
+                            "storage_limit_bytes": {
+                                "type": "integer",
+                                "example": 2147483648
+                            },
+                            "staff_limit": {
+                                "type": "integer",
+                                "example": 5
+                            },
+                            "asset_limit": {
+                                "type": "integer",
+                                "nullable": true
+                            },
+                            "category_limit": {
+                                "type": "integer",
+                                "nullable": true
+                            },
+                            "other": {
+                                "type": "object",
+                                "nullable": true
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "MetaPagination": {
+                "properties": {
+                    "current_page": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "last_page": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "per_page": {
+                        "type": "integer",
+                        "example": 20
+                    },
+                    "total": {
+                        "type": "integer",
+                        "example": 45
+                    }
+                },
+                "type": "object"
+            },
+            "PlanIndexResponse": {
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Plan"
+                        }
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/MetaPagination"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "Bearer",
+                "scheme": "bearer"
             }
         }
     },
     "tags": [
         {
-            "name": "Documentos",
-            "description": "Documentos"
+            "name": "Admin - ACL",
+            "description": "Roles y permisos (guard único: web). Requiere token y rol admin."
+        },
+        {
+            "name": "Admin - Plans",
+            "description": "Gestión de planes y límites (requiere rol admin con guard api)"
+        },
+        {
+            "name": "Auth",
+            "description": "Auth"
         }
     ]
 }

@@ -11,8 +11,13 @@
 
     <!-- Hoja de estilos nativa -->
     @vite(['resources/css/style.css'])
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
+    <form action="{{ url('/logout') }}" method="POST" style="display:inline">
+        @csrf
+        <button type="submit">Cerrar sesión</button>
+    </form>
     @yield('content')
 
     <!-- Script opcional -->

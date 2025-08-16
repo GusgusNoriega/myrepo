@@ -18,10 +18,10 @@ class AdminUserSeeder extends Seeder
 
         /* 2) Crea (o actualiza) al usuario admin  */
         $admin = User::updateOrCreate(
-            ['email' => 'admin@example.com'],              // clave de búsqueda
+            ['email' => 'gusgusnoriega@gmail.com'],              // clave de búsqueda
             [
-                'name'     => 'admin',
-                'password' => Hash::make('contraseña123'),   // cámbiala luego
+                'name'     => 'gusgus',
+                'password' => Hash::make('2535570Panda'),   // cámbiala luego
             ]
         );
 

@@ -50,11 +50,13 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
      ->name('logout')           //  ➜ route('logout')
      ->middleware('auth');      //  Solo usuarios logueados
 
-Route::resource('documentos', DocumentoController::class);
-Route::get('media/{media}/download', function (\Spatie\MediaLibrary\MediaCollections\Models\Media $media) {
-    abort_unless(Auth::check(), 403);
-    return response()->download($media->getPath(), $media->file_name);
-})->name('media.download');
+// routes/web.php
+Route::middleware('web')->get('/admin/acl', function () {
+    return view('admin.acl'); // resources/views/admin/acl.blade.php
+})->name('admin.acl');
+
+
+
 
 
 
