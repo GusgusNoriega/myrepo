@@ -9,6 +9,11 @@ use App\Http\Controllers\Api\AuthTokenController;
 use App\Http\Controllers\Api\Admin\RoleController;
 use App\Http\Controllers\Api\Admin\PermissionController;
 use App\Http\Controllers\Api\Admin\AclUserController;
+use App\Http\Controllers\Api\Admin\ProductController;
+use App\Http\Controllers\Api\Admin\MembershipController;
+use App\Http\Controllers\Api\Admin\SubscriptionController;
+use App\Http\Controllers\Api\Admin\CategoryController;
+use App\Http\Controllers\Api\Admin\BusinessController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,5 +68,41 @@ Route::prefix('admin')
         Route::put('users/{user}/roles', [AclUserController::class, 'syncRoles']);
         Route::put('users/{user}/permissions', [AclUserController::class, 'syncPermissions']);
     });
+
+Route::middleware(['auth:api', 'role:admin'])
+    ->prefix('admin')
+    ->group(function () {
+        Route::apiResource('products', ProductController::class);
+    });
+
+Route::middleware(['auth:api']) // agrega tu middleware/permiso de admin aquí
+    ->prefix('admin')
+    ->group(function () {
+        Route::apiResource('memberships', MembershipController::class)
+            ->only(['index','show','store','update','destroy']);
+    });
+
+Route::middleware(['auth:api']) // agrega tus middlewares/permiso admin
+    ->prefix('admin')
+    ->group(function () {
+        Route::apiResource('subscriptions', SubscriptionController::class)
+            ->only(['index','show','store','update','destroy']);
+    });
+
+Route::middleware(['auth:api']) // agrega tus middlewares (role:admin) si corresponde
+    ->prefix('admin')
+    ->group(function () {
+        Route::apiResource('categories', CategoryController::class)
+            ->only(['index','show','store','update','destroy']);
+    });
+
+Route::middleware(['auth:api']) // agrega 'role:admin' si corresponde
+    ->prefix('admin')
+    ->group(function () {
+        Route::apiResource('businesses', BusinessController::class)
+            ->only(['index','show','store','update','destroy']);
+    });
+
+
 
 

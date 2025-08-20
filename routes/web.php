@@ -50,10 +50,16 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
      ->name('logout')           //  ➜ route('logout')
      ->middleware('auth');      //  Solo usuarios logueados
 
-// routes/web.php
-Route::middleware('web')->get('/admin/acl', function () {
-    return view('admin.acl'); // resources/views/admin/acl.blade.php
-})->name('admin.acl');
+
+// Muestra la pantalla (requiere estar autenticado en 'web')
+Route::view('/admin/acl', 'admin.acl.index')->name('admin.acl');
+Route::view('/admin/products', 'admin.products.index')->name('admin.products');
+Route::view('/admin/planes', 'admin.planes.index')->name('admin.planes');
+Route::view('/admin/membresias', 'admin.membresias.index')->name('admin.membresias');
+Route::view('/admin/suscripciones', 'admin.suscripciones.index')->name('admin.suscripciones');
+Route::view('/admin/categorias', 'admin.categorias.index')->name('admin.categorias');
+Route::view('/admin/negocios', 'admin.negocios.index')->name('admin.negocios');
+Route::view('/admin/media', 'admin.media.index')->name('admin.media');
 
 
 

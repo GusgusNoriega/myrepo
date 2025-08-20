@@ -217,6 +217,1370 @@
                 ]
             }
         },
+        "/api/admin/businesses": {
+            "get": {
+                "tags": [
+                    "Admin - Businesses"
+                ],
+                "summary": "Listado de negocios (paginado + filtros).",
+                "description": "Filtros:\n- owner_user_id: int\n- active: 1|0\n- search: coincide con name/slug/domain/subdomain/contact_email\n- per_page, page",
+                "operationId": "08a21c6e2c87011cd649df8f5d6cb1dc",
+                "parameters": [
+                    {
+                        "name": "owner_user_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "active",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 20
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "data": [
+                                        {
+                                            "id": 1,
+                                            "owner_user_id": 10,
+                                            "name": "Mi Tienda",
+                                            "slug": "mi-tienda",
+                                            "domain": "mitienda.com",
+                                            "subdomain": "store",
+                                            "country_code": "PE",
+                                            "currency": "USD",
+                                            "timezone": "America/Lima",
+                                            "locale": "es_PE",
+                                            "contact_name": "Juan",
+                                            "contact_email": "soporte@mitienda.com",
+                                            "settings": {
+                                                "theme": "light"
+                                            },
+                                            "is_active": true,
+                                            "created_at": "2025-08-01T12:00:00Z",
+                                            "updated_at": "2025-08-01T12:00:00Z"
+                                        }
+                                    ],
+                                    "meta": {
+                                        "current_page": 1,
+                                        "last_page": 1,
+                                        "per_page": 20,
+                                        "total": 1
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - Businesses"
+                ],
+                "summary": "Crear un negocio.",
+                "description": "Notas:\n- Si no envías `slug`, se genera desde `name` y se garantiza unicidad.\n- `domain`/`subdomain` se guardan en minúsculas.\n- `currency`/`country_code` se normalizan en mayúsculas.",
+                "operationId": "9ff2fb3f60a0d6633e4ae79e38e61d79",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "owner_user_id": {
+                                        "type": "integer",
+                                        "example": 10,
+                                        "nullable": true
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Mi Tienda"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": "mi-tienda",
+                                        "nullable": true
+                                    },
+                                    "domain": {
+                                        "type": "string",
+                                        "example": "mitienda.com",
+                                        "nullable": true
+                                    },
+                                    "subdomain": {
+                                        "type": "string",
+                                        "example": "store",
+                                        "nullable": true
+                                    },
+                                    "country_code": {
+                                        "type": "string",
+                                        "example": "PE",
+                                        "nullable": true
+                                    },
+                                    "currency": {
+                                        "type": "string",
+                                        "example": "USD"
+                                    },
+                                    "timezone": {
+                                        "type": "string",
+                                        "example": "America/Lima",
+                                        "nullable": true
+                                    },
+                                    "locale": {
+                                        "type": "string",
+                                        "example": "es_PE",
+                                        "nullable": true
+                                    },
+                                    "contact_name": {
+                                        "type": "string",
+                                        "example": "Juan",
+                                        "nullable": true
+                                    },
+                                    "contact_email": {
+                                        "type": "string",
+                                        "example": "soporte@mitienda.com",
+                                        "nullable": true
+                                    },
+                                    "settings": {
+                                        "type": "object",
+                                        "example": {
+                                            "theme": "light"
+                                        },
+                                        "nullable": true
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "id": 1,
+                                    "owner_user_id": 10,
+                                    "name": "Mi Tienda",
+                                    "slug": "mi-tienda",
+                                    "domain": "mitienda.com",
+                                    "subdomain": "store",
+                                    "country_code": "PE",
+                                    "currency": "USD",
+                                    "timezone": "America/Lima",
+                                    "locale": "es_PE",
+                                    "contact_name": "Juan",
+                                    "contact_email": "soporte@mitienda.com",
+                                    "settings": {
+                                        "theme": "light"
+                                    },
+                                    "is_active": true,
+                                    "created_at": "2025-08-01T12:00:00Z",
+                                    "updated_at": "2025-08-01T12:00:00Z"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/businesses/{business}": {
+            "get": {
+                "tags": [
+                    "Admin - Businesses"
+                ],
+                "summary": "Mostrar un negocio por ID.",
+                "operationId": "5cc37451e770398d3e960a7f521b762d",
+                "parameters": [
+                    {
+                        "name": "business",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "id": 1,
+                                    "owner_user_id": 10,
+                                    "name": "Mi Tienda",
+                                    "slug": "mi-tienda",
+                                    "domain": "mitienda.com",
+                                    "subdomain": "store",
+                                    "country_code": "PE",
+                                    "currency": "USD",
+                                    "timezone": "America/Lima",
+                                    "locale": "es_PE",
+                                    "contact_name": "Juan",
+                                    "contact_email": "soporte@mitienda.com",
+                                    "settings": {
+                                        "theme": "light"
+                                    },
+                                    "is_active": true,
+                                    "created_at": "2025-08-01T12:00:00Z",
+                                    "updated_at": "2025-08-01T12:00:00Z"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Businesses"
+                ],
+                "summary": "Eliminar un negocio.",
+                "description": "Efectos por FKs:\n- categories/products/subscriptions/media/etc. → CASCADE\n- users.active_business_id → SET NULL",
+                "operationId": "255bf8127d0e5c768c29b41a54c470a8",
+                "parameters": [
+                    {
+                        "name": "business",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Eliminado"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Admin - Businesses"
+                ],
+                "summary": "Actualizar un negocio.",
+                "description": "- Si envías `slug` vacío o null, se regenera desde `name` actual.\n- Los `unique` ignoran el propio ID.",
+                "operationId": "b20d65797002ab6f85a16e91fbb376b7",
+                "parameters": [
+                    {
+                        "name": "business",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "owner_user_id": {
+                                        "type": "integer",
+                                        "example": 10,
+                                        "nullable": true
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Mi Tienda Perú"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": "mi-tienda-peru",
+                                        "nullable": true
+                                    },
+                                    "domain": {
+                                        "type": "string",
+                                        "example": "mitiendaperu.com",
+                                        "nullable": true
+                                    },
+                                    "subdomain": {
+                                        "type": "string",
+                                        "example": "store",
+                                        "nullable": true
+                                    },
+                                    "country_code": {
+                                        "type": "string",
+                                        "example": "PE",
+                                        "nullable": true
+                                    },
+                                    "currency": {
+                                        "type": "string",
+                                        "example": "USD"
+                                    },
+                                    "timezone": {
+                                        "type": "string",
+                                        "example": "America/Lima",
+                                        "nullable": true
+                                    },
+                                    "locale": {
+                                        "type": "string",
+                                        "example": "es_PE",
+                                        "nullable": true
+                                    },
+                                    "contact_name": {
+                                        "type": "string",
+                                        "example": "Juan",
+                                        "nullable": true
+                                    },
+                                    "contact_email": {
+                                        "type": "string",
+                                        "example": "soporte@mitienda.com",
+                                        "nullable": true
+                                    },
+                                    "settings": {
+                                        "type": "object",
+                                        "example": {
+                                            "theme": "dark"
+                                        },
+                                        "nullable": true
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "id": 1,
+                                    "owner_user_id": 10,
+                                    "name": "Mi Tienda Perú",
+                                    "slug": "mi-tienda-peru",
+                                    "domain": "mitiendaperu.com",
+                                    "subdomain": "store",
+                                    "country_code": "PE",
+                                    "currency": "USD",
+                                    "timezone": "America/Lima",
+                                    "locale": "es_PE",
+                                    "contact_name": "Juan",
+                                    "contact_email": "soporte@mitienda.com",
+                                    "settings": {
+                                        "theme": "dark"
+                                    },
+                                    "is_active": true,
+                                    "created_at": "2025-08-01T12:00:00Z",
+                                    "updated_at": "2025-08-02T12:00:00Z"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/categories": {
+            "get": {
+                "tags": [
+                    "Admin - Categories"
+                ],
+                "summary": "Listado de categorías (paginado y filtrado).",
+                "description": "Filtros:\n- business_id (recomendado)\n- parent_id (para listar subcategorías)\n- search (coincide en name o slug)\n- order_by: position|name|created_at (default: position)\n- sort: asc|desc (default: asc)\n- per_page, page",
+                "operationId": "71fce704423c89eab31adce4a23df70b",
+                "parameters": [
+                    {
+                        "name": "business_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "parent_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "order_by",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "position",
+                                "name",
+                                "created_at"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 20
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "data": [
+                                        {
+                                            "id": 10,
+                                            "business_id": 1,
+                                            "parent_id": null,
+                                            "name": "Ropa",
+                                            "slug": "ropa",
+                                            "position": 1,
+                                            "created_at": "2025-08-01T12:00:00Z",
+                                            "updated_at": "2025-08-01T12:00:00Z",
+                                            "children_count": 2,
+                                            "products_count": 14,
+                                            "parent": null,
+                                            "business": {
+                                                "id": 1,
+                                                "name": "Mi Negocio"
+                                            }
+                                        }
+                                    ],
+                                    "meta": {
+                                        "current_page": 1,
+                                        "last_page": 1,
+                                        "per_page": 20,
+                                        "total": 1
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - Categories"
+                ],
+                "summary": "Crear una categoría.",
+                "description": "Reglas:\n- `slug` único por (business_id, slug). Si no se envía, se genera desde `name`.\n- `parent_id` (si se envía) debe pertenecer al mismo `business_id`.\n- Se valida **límite de categorías** según la suscripción activa del negocio.",
+                "operationId": "810e8b9fee1619d4229208cb942c486a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "business_id",
+                                    "name"
+                                ],
+                                "properties": {
+                                    "business_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "parent_id": {
+                                        "type": "integer",
+                                        "example": null,
+                                        "nullable": true
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Ropa"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": "ropa",
+                                        "nullable": true
+                                    },
+                                    "position": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "id": 10,
+                                    "business_id": 1,
+                                    "parent_id": null,
+                                    "name": "Ropa",
+                                    "slug": "ropa",
+                                    "position": 1
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación / Límite alcanzado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "message": "Has alcanzado el límite de categorías para tu plan."
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/categories/{category}": {
+            "get": {
+                "tags": [
+                    "Admin - Categories"
+                ],
+                "summary": "Mostrar una categoría por ID.",
+                "operationId": "11a8aaa127a831f1b2178b277adfce70",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "id": 10,
+                                    "business_id": 1,
+                                    "parent_id": null,
+                                    "name": "Ropa",
+                                    "slug": "ropa",
+                                    "position": 1,
+                                    "created_at": "2025-08-01T12:00:00Z",
+                                    "updated_at": "2025-08-01T12:00:00Z",
+                                    "children_count": 2,
+                                    "products_count": 14,
+                                    "parent": null,
+                                    "business": {
+                                        "id": 1,
+                                        "name": "Mi Negocio"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Categories"
+                ],
+                "summary": "Eliminar una categoría.",
+                "description": "Efectos por FKs:\n- `parent_id` de los hijos se pone en NULL (SET NULL)\n- Relaciones en `product_category` se eliminan (CASCADE)",
+                "operationId": "1c50d201211dea34943f752a3cbb8e87",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Eliminado"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Admin - Categories"
+                ],
+                "summary": "Actualizar una categoría.",
+                "description": "Notas:\n- No se permite cambiar `business_id`.\n- `parent_id`, si se envía, debe ser del mismo negocio y no puede ser el propio id\nni un descendiente (ciclo). Se valida de forma simple subiendo por ancestros.",
+                "operationId": "8fd4e8d94872fea0b6efac980d6f6a6f",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "parent_id": {
+                                        "type": "integer",
+                                        "example": null,
+                                        "nullable": true
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Ropa y Accesorios"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": "ropa-accesorios"
+                                    },
+                                    "position": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "id": 10,
+                                    "business_id": 1,
+                                    "parent_id": null,
+                                    "name": "Ropa y Accesorios",
+                                    "slug": "ropa-accesorios",
+                                    "position": 2
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/memberships": {
+            "get": {
+                "tags": [
+                    "Admin - Memberships"
+                ],
+                "summary": "Listado de membresías (paginado y filtrado).",
+                "operationId": "0f77d028dfcd3037602138767f335048",
+                "parameters": [
+                    {
+                        "name": "business_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "user_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "role",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "owner",
+                                "admin",
+                                "editor",
+                                "viewer"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "state",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "invited",
+                                "active",
+                                "suspended"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 20
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "data": [
+                                        {
+                                            "id": 12,
+                                            "user_id": 3,
+                                            "business_id": 1,
+                                            "role": "editor",
+                                            "state": "active",
+                                            "accepted_at": "2025-08-10T14:15:22Z",
+                                            "invited_by": 2,
+                                            "created_at": "2025-08-01T12:34:56Z",
+                                            "updated_at": "2025-08-10T14:15:22Z",
+                                            "user": {
+                                                "id": 3,
+                                                "name": "Ana Pérez",
+                                                "email": "ana@example.com"
+                                            },
+                                            "business": {
+                                                "id": 1,
+                                                "name": "Mi Negocio"
+                                            },
+                                            "invited_by_user": {
+                                                "id": 2,
+                                                "name": "Admin",
+                                                "email": "admin@example.com"
+                                            }
+                                        }
+                                    ],
+                                    "meta": {
+                                        "current_page": 1,
+                                        "last_page": 3,
+                                        "per_page": 20,
+                                        "total": 41
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - Memberships"
+                ],
+                "summary": "Crear una nueva membresía.",
+                "operationId": "5d37b917d0ad031c0ecaf871e6217c88",
+                "requestBody": {
+                    "description": "Cuerpo mínimo: user_id, business_id y role",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "business_id",
+                                    "role"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "business_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "enum": [
+                                            "owner",
+                                            "admin",
+                                            "editor",
+                                            "viewer"
+                                        ],
+                                        "example": "editor"
+                                    },
+                                    "state": {
+                                        "type": "string",
+                                        "enum": [
+                                            "invited",
+                                            "active",
+                                            "suspended"
+                                        ],
+                                        "example": "invited"
+                                    },
+                                    "accepted_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-08-19T15:00:00Z"
+                                    },
+                                    "invited_by": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "id": 25,
+                                    "user_id": 3,
+                                    "business_id": 1,
+                                    "role": "editor",
+                                    "state": "invited",
+                                    "accepted_at": null,
+                                    "invited_by": 2,
+                                    "created_at": "2025-08-19T15:01:00Z",
+                                    "updated_at": "2025-08-19T15:01:00Z",
+                                    "user": {
+                                        "id": 3,
+                                        "name": "Ana Pérez",
+                                        "email": "ana@example.com"
+                                    },
+                                    "business": {
+                                        "id": 1,
+                                        "name": "Mi Negocio"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "409": {
+                        "description": "Conflicto: membresía duplicada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "message": "Ya existe una membresía para este usuario en este negocio."
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/memberships/{membership}": {
+            "get": {
+                "tags": [
+                    "Admin - Memberships"
+                ],
+                "summary": "Mostrar una membresía por ID.",
+                "operationId": "96c5e750df99f40e12d1da41dafb5132",
+                "parameters": [
+                    {
+                        "name": "membership",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "id": 12,
+                                    "user_id": 3,
+                                    "business_id": 1,
+                                    "role": "editor",
+                                    "state": "active",
+                                    "accepted_at": "2025-08-10T14:15:22Z",
+                                    "invited_by": 2,
+                                    "created_at": "2025-08-01T12:34:56Z",
+                                    "updated_at": "2025-08-10T14:15:22Z",
+                                    "user": {
+                                        "id": 3,
+                                        "name": "Ana Pérez",
+                                        "email": "ana@example.com"
+                                    },
+                                    "business": {
+                                        "id": 1,
+                                        "name": "Mi Negocio"
+                                    },
+                                    "invitedBy": {
+                                        "id": 2,
+                                        "name": "Admin",
+                                        "email": "admin@example.com"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Memberships"
+                ],
+                "summary": "Eliminar una membresía.",
+                "operationId": "983d696e95e5005146b9a19f8b189a46",
+                "parameters": [
+                    {
+                        "name": "membership",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Eliminado"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Admin - Memberships"
+                ],
+                "summary": "Actualizar una membresía.",
+                "operationId": "c0a7db1c58b9ac260caadcfdf2b1822c",
+                "parameters": [
+                    {
+                        "name": "membership",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Envíe solo los campos que desee actualizar.",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "role": {
+                                        "type": "string",
+                                        "enum": [
+                                            "owner",
+                                            "admin",
+                                            "editor",
+                                            "viewer"
+                                        ],
+                                        "example": "admin"
+                                    },
+                                    "state": {
+                                        "type": "string",
+                                        "enum": [
+                                            "invited",
+                                            "active",
+                                            "suspended"
+                                        ],
+                                        "example": "active"
+                                    },
+                                    "accepted_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-08-19T15:30:00Z"
+                                    },
+                                    "invited_by": {
+                                        "type": "integer",
+                                        "example": 2,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "id": 12,
+                                    "user_id": 3,
+                                    "business_id": 1,
+                                    "role": "admin",
+                                    "state": "active",
+                                    "accepted_at": "2025-08-19T15:30:00Z",
+                                    "invited_by": 2,
+                                    "created_at": "2025-08-01T12:34:56Z",
+                                    "updated_at": "2025-08-19T15:30:00Z",
+                                    "user": {
+                                        "id": 3,
+                                        "name": "Ana Pérez",
+                                        "email": "ana@example.com"
+                                    },
+                                    "business": {
+                                        "id": 1,
+                                        "name": "Mi Negocio"
+                                    },
+                                    "invitedBy": {
+                                        "id": 2,
+                                        "name": "Admin",
+                                        "email": "admin@example.com"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/admin/permissions": {
             "get": {
                 "tags": [
@@ -800,6 +2164,985 @@
                 ]
             }
         },
+        "/api/admin/products": {
+            "get": {
+                "tags": [
+                    "Admin - Products"
+                ],
+                "summary": "Listar productos (paginado + filtros).",
+                "operationId": "AdminProductsIndex",
+                "parameters": [
+                    {
+                        "name": "business_id",
+                        "in": "query",
+                        "description": "Filtra por negocio",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Buscar por name/sku/slug",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "camiseta"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Tamaño de página (default 20)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 20
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Página a consultar",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Listado paginado de productos con featured y galería (name/url).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "business_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "category_id": {
+                                                        "type": "integer",
+                                                        "nullable": true
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "slug": {
+                                                        "type": "string"
+                                                    },
+                                                    "sku": {
+                                                        "type": "string"
+                                                    },
+                                                    "barcode": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "nullable": true
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "draft",
+                                                            "active",
+                                                            "archived"
+                                                        ]
+                                                    },
+                                                    "has_variants": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "price_cents": {
+                                                        "type": "integer",
+                                                        "nullable": true
+                                                    },
+                                                    "cost_cents": {
+                                                        "type": "integer",
+                                                        "nullable": true
+                                                    },
+                                                    "compare_at_price_cents": {
+                                                        "type": "integer",
+                                                        "nullable": true
+                                                    },
+                                                    "currency": {
+                                                        "type": "string",
+                                                        "example": "USD"
+                                                    },
+                                                    "tax_included": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "attributes": {
+                                                        "type": "object",
+                                                        "nullable": true
+                                                    },
+                                                    "weight_grams": {
+                                                        "type": "integer",
+                                                        "nullable": true
+                                                    },
+                                                    "dimensions": {
+                                                        "type": "object",
+                                                        "nullable": true
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "nullable": true
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "nullable": true
+                                                    },
+                                                    "published_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "nullable": true
+                                                    },
+                                                    "featured_media": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "url": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "type": "object",
+                                                        "nullable": true
+                                                    },
+                                                    "gallery_media": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "name": {
+                                                                    "type": "string"
+                                                                },
+                                                                "url": {
+                                                                    "type": "string"
+                                                                },
+                                                                "position": {
+                                                                    "type": "integer",
+                                                                    "nullable": true
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 20
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 45
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - Products"
+                ],
+                "summary": "Crear producto (acepta featured_media_id y gallery_media_ids como IDs).",
+                "operationId": "AdminProductsStore",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "business_id",
+                                    "name",
+                                    "slug",
+                                    "sku",
+                                    "status",
+                                    "has_variants",
+                                    "currency",
+                                    "tax_included"
+                                ],
+                                "properties": {
+                                    "business_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "category_id": {
+                                        "type": "integer",
+                                        "example": 10,
+                                        "nullable": true
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Camiseta básica"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": "camiseta-basica"
+                                    },
+                                    "sku": {
+                                        "type": "string",
+                                        "example": "TSH-001"
+                                    },
+                                    "barcode": {
+                                        "type": "string",
+                                        "example": "1234567890123",
+                                        "nullable": true
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Camiseta 100% algodón",
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "draft",
+                                            "active",
+                                            "archived"
+                                        ],
+                                        "example": "active"
+                                    },
+                                    "has_variants": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "price_cents": {
+                                        "type": "integer",
+                                        "example": 1299,
+                                        "nullable": true
+                                    },
+                                    "cost_cents": {
+                                        "type": "integer",
+                                        "example": 700,
+                                        "nullable": true
+                                    },
+                                    "compare_at_price_cents": {
+                                        "type": "integer",
+                                        "example": 1499,
+                                        "nullable": true
+                                    },
+                                    "currency": {
+                                        "type": "string",
+                                        "example": "USD"
+                                    },
+                                    "tax_included": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "attributes": {
+                                        "type": "object",
+                                        "example": {
+                                            "color": "negro",
+                                            "talla": "M"
+                                        },
+                                        "nullable": true
+                                    },
+                                    "weight_grams": {
+                                        "type": "integer",
+                                        "example": 200,
+                                        "nullable": true
+                                    },
+                                    "dimensions": {
+                                        "type": "object",
+                                        "example": {
+                                            "w": 20,
+                                            "h": 2,
+                                            "l": 30
+                                        },
+                                        "nullable": true
+                                    },
+                                    "published_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "nullable": true
+                                    },
+                                    "featured_media_id": {
+                                        "type": "integer",
+                                        "example": 10,
+                                        "nullable": true
+                                    },
+                                    "gallery_media_ids": {
+                                        "type": "string",
+                                        "example": "11,12,13",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "business_id": {
+                                            "type": "integer"
+                                        },
+                                        "category_id": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "slug": {
+                                            "type": "string"
+                                        },
+                                        "sku": {
+                                            "type": "string"
+                                        },
+                                        "barcode": {
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "draft",
+                                                "active",
+                                                "archived"
+                                            ]
+                                        },
+                                        "has_variants": {
+                                            "type": "boolean"
+                                        },
+                                        "price_cents": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "cost_cents": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "compare_at_price_cents": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "currency": {
+                                            "type": "string",
+                                            "example": "USD"
+                                        },
+                                        "tax_included": {
+                                            "type": "boolean"
+                                        },
+                                        "attributes": {
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "weight_grams": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "dimensions": {
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        },
+                                        "published_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        },
+                                        "featured_media": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "url": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "gallery_media": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "url": {
+                                                        "type": "string"
+                                                    },
+                                                    "position": {
+                                                        "type": "integer",
+                                                        "nullable": true
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/products/{product}": {
+            "get": {
+                "tags": [
+                    "Admin - Products"
+                ],
+                "summary": "Mostrar un producto por ID (incluye featured y galería).",
+                "operationId": "AdminProductsShow",
+                "parameters": [
+                    {
+                        "name": "product",
+                        "in": "path",
+                        "description": "ID del producto",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Producto con featured y galería (name/url).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "business_id": {
+                                            "type": "integer"
+                                        },
+                                        "category_id": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "slug": {
+                                            "type": "string"
+                                        },
+                                        "sku": {
+                                            "type": "string"
+                                        },
+                                        "barcode": {
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "draft",
+                                                "active",
+                                                "archived"
+                                            ]
+                                        },
+                                        "has_variants": {
+                                            "type": "boolean"
+                                        },
+                                        "price_cents": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "cost_cents": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "compare_at_price_cents": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "currency": {
+                                            "type": "string",
+                                            "example": "USD"
+                                        },
+                                        "tax_included": {
+                                            "type": "boolean"
+                                        },
+                                        "attributes": {
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "weight_grams": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "dimensions": {
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        },
+                                        "published_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        },
+                                        "featured_media": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "url": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "gallery_media": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "url": {
+                                                        "type": "string"
+                                                    },
+                                                    "position": {
+                                                        "type": "integer",
+                                                        "nullable": true
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Products"
+                ],
+                "summary": "Eliminar producto (borra también vínculos de media).",
+                "operationId": "AdminProductsDestroy",
+                "parameters": [
+                    {
+                        "name": "product",
+                        "in": "path",
+                        "description": "ID del producto",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Eliminado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Admin - Products"
+                ],
+                "summary": "Actualizar un producto (reemplaza featured/galería si se envían).",
+                "operationId": "AdminProductsUpdate",
+                "parameters": [
+                    {
+                        "name": "product",
+                        "in": "path",
+                        "description": "ID del producto",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "business_id",
+                                    "name",
+                                    "slug",
+                                    "sku",
+                                    "status",
+                                    "has_variants",
+                                    "currency",
+                                    "tax_included"
+                                ],
+                                "properties": {
+                                    "business_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "category_id": {
+                                        "type": "integer",
+                                        "example": 10,
+                                        "nullable": true
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Camiseta básica"
+                                    },
+                                    "slug": {
+                                        "type": "string",
+                                        "example": "camiseta-basica"
+                                    },
+                                    "sku": {
+                                        "type": "string",
+                                        "example": "TSH-001"
+                                    },
+                                    "barcode": {
+                                        "type": "string",
+                                        "example": "1234567890123",
+                                        "nullable": true
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Camiseta 100% algodón",
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "draft",
+                                            "active",
+                                            "archived"
+                                        ],
+                                        "example": "active"
+                                    },
+                                    "has_variants": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "price_cents": {
+                                        "type": "integer",
+                                        "example": 1299,
+                                        "nullable": true
+                                    },
+                                    "cost_cents": {
+                                        "type": "integer",
+                                        "example": 700,
+                                        "nullable": true
+                                    },
+                                    "compare_at_price_cents": {
+                                        "type": "integer",
+                                        "example": 1499,
+                                        "nullable": true
+                                    },
+                                    "currency": {
+                                        "type": "string",
+                                        "example": "USD"
+                                    },
+                                    "tax_included": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "attributes": {
+                                        "type": "object",
+                                        "example": {
+                                            "color": "negro",
+                                            "talla": "M"
+                                        },
+                                        "nullable": true
+                                    },
+                                    "weight_grams": {
+                                        "type": "integer",
+                                        "example": 200,
+                                        "nullable": true
+                                    },
+                                    "dimensions": {
+                                        "type": "object",
+                                        "example": {
+                                            "w": 20,
+                                            "h": 2,
+                                            "l": 30
+                                        },
+                                        "nullable": true
+                                    },
+                                    "published_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "nullable": true
+                                    },
+                                    "featured_media_id": {
+                                        "type": "integer",
+                                        "example": 10,
+                                        "nullable": true
+                                    },
+                                    "gallery_media_ids": {
+                                        "type": "string",
+                                        "example": "11,12,13",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Actualizado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "business_id": {
+                                            "type": "integer"
+                                        },
+                                        "category_id": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "slug": {
+                                            "type": "string"
+                                        },
+                                        "sku": {
+                                            "type": "string"
+                                        },
+                                        "barcode": {
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "nullable": true
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "draft",
+                                                "active",
+                                                "archived"
+                                            ]
+                                        },
+                                        "has_variants": {
+                                            "type": "boolean"
+                                        },
+                                        "price_cents": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "cost_cents": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "compare_at_price_cents": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "currency": {
+                                            "type": "string",
+                                            "example": "USD"
+                                        },
+                                        "tax_included": {
+                                            "type": "boolean"
+                                        },
+                                        "attributes": {
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "weight_grams": {
+                                            "type": "integer",
+                                            "nullable": true
+                                        },
+                                        "dimensions": {
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        },
+                                        "published_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "nullable": true
+                                        },
+                                        "featured_media": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "url": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object",
+                                            "nullable": true
+                                        },
+                                        "gallery_media": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "url": {
+                                                        "type": "string"
+                                                    },
+                                                    "position": {
+                                                        "type": "integer",
+                                                        "nullable": true
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/admin/roles": {
             "get": {
                 "tags": [
@@ -1255,6 +3598,596 @@
                 ]
             }
         },
+        "/api/admin/subscriptions": {
+            "get": {
+                "tags": [
+                    "Admin - Subscriptions"
+                ],
+                "summary": "Listado de suscripciones (paginado + filtros).",
+                "description": "Filtros soportados:\n- business_id: int\n- plan_id: int\n- status: trialing|active|past_due|canceled\n- customer: string (coincide con external_customer_id LIKE)\n- ref: string (coincide con external_ref LIKE)\n- active_on: date-time (ISO) → suscripciones activas en esa fecha\n- date_from / date_to: acota por rango de current_period_start / end\n- per_page, page",
+                "operationId": "35cad7b3411a18e5aa61df44434bb2f7",
+                "parameters": [
+                    {
+                        "name": "business_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "plan_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "trialing",
+                                "active",
+                                "past_due",
+                                "canceled"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "customer",
+                        "in": "query",
+                        "description": "external_customer_id LIKE",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ref",
+                        "in": "query",
+                        "description": "external_ref LIKE",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "active_on",
+                        "in": "query",
+                        "description": "ISO date-time",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "date_from",
+                        "in": "query",
+                        "description": "ISO date-time",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "date_to",
+                        "in": "query",
+                        "description": "ISO date-time",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 20
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "data": [
+                                        {
+                                            "id": 101,
+                                            "business_id": 1,
+                                            "plan_id": 3,
+                                            "status": "active",
+                                            "current_period_start": "2025-08-01T00:00:00Z",
+                                            "current_period_end": "2025-08-31T23:59:59Z",
+                                            "trial_ends_at": null,
+                                            "canceled_at": null,
+                                            "cancel_at_period_end": false,
+                                            "external_ref": "sub_ABC",
+                                            "external_customer_id": "cus_123",
+                                            "payment_method": {
+                                                "brand": "visa",
+                                                "last4": "4242"
+                                            },
+                                            "created_at": "2025-08-01T12:00:00Z",
+                                            "updated_at": "2025-08-01T12:00:00Z",
+                                            "business": {
+                                                "id": 1,
+                                                "name": "Mi Negocio"
+                                            },
+                                            "plan": {
+                                                "id": 3,
+                                                "code": "starter",
+                                                "name": "Starter",
+                                                "price_usd": "9.00",
+                                                "billing_interval": "month"
+                                            }
+                                        }
+                                    ],
+                                    "meta": {
+                                        "current_page": 1,
+                                        "last_page": 1,
+                                        "per_page": 20,
+                                        "total": 1
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - Subscriptions"
+                ],
+                "summary": "Crear una suscripción.",
+                "description": "Reglas:\n- `current_period_end` debe ser > `current_period_start`\n- Evitar solapamiento con otra suscripción trialing/active del mismo negocio.",
+                "operationId": "f0596984bf1b4c4427e9146fe3649154",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "business_id",
+                                    "plan_id",
+                                    "status",
+                                    "current_period_start",
+                                    "current_period_end"
+                                ],
+                                "properties": {
+                                    "business_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "plan_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "trialing",
+                                            "active",
+                                            "past_due",
+                                            "canceled"
+                                        ],
+                                        "example": "active"
+                                    },
+                                    "current_period_start": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-08-01T00:00:00Z"
+                                    },
+                                    "current_period_end": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-08-31T23:59:59Z"
+                                    },
+                                    "trial_ends_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": null,
+                                        "nullable": true
+                                    },
+                                    "canceled_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": null,
+                                        "nullable": true
+                                    },
+                                    "cancel_at_period_end": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "external_ref": {
+                                        "type": "string",
+                                        "example": "sub_ABC"
+                                    },
+                                    "external_customer_id": {
+                                        "type": "string",
+                                        "example": "cus_123"
+                                    },
+                                    "payment_method": {
+                                        "type": "object",
+                                        "example": {
+                                            "brand": "visa",
+                                            "last4": "4242"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "id": 201,
+                                    "business_id": 1,
+                                    "plan_id": 3,
+                                    "status": "active",
+                                    "current_period_start": "2025-08-01T00:00:00Z",
+                                    "current_period_end": "2025-08-31T23:59:59Z",
+                                    "trial_ends_at": null,
+                                    "canceled_at": null,
+                                    "cancel_at_period_end": false,
+                                    "external_ref": "sub_ABC",
+                                    "external_customer_id": "cus_123",
+                                    "payment_method": {
+                                        "brand": "visa",
+                                        "last4": "4242"
+                                    },
+                                    "created_at": "2025-08-01T12:00:00Z",
+                                    "updated_at": "2025-08-01T12:00:00Z",
+                                    "business": {
+                                        "id": 1,
+                                        "name": "Mi Negocio"
+                                    },
+                                    "plan": {
+                                        "id": 3,
+                                        "code": "starter",
+                                        "name": "Starter",
+                                        "price_usd": "9.00",
+                                        "billing_interval": "month"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "409": {
+                        "description": "Conflicto de solapamiento",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "message": "Existe otra suscripción activa/trial que se solapa en el mismo periodo."
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/subscriptions/{subscription}": {
+            "get": {
+                "tags": [
+                    "Admin - Subscriptions"
+                ],
+                "summary": "Ver una suscripción por ID.",
+                "operationId": "36c1eeee32a24b74fa023d24cc53ee9f",
+                "parameters": [
+                    {
+                        "name": "subscription",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "id": 101,
+                                    "business_id": 1,
+                                    "plan_id": 3,
+                                    "status": "active",
+                                    "current_period_start": "2025-08-01T00:00:00Z",
+                                    "current_period_end": "2025-08-31T23:59:59Z",
+                                    "trial_ends_at": null,
+                                    "canceled_at": null,
+                                    "cancel_at_period_end": false,
+                                    "external_ref": "sub_ABC",
+                                    "external_customer_id": "cus_123",
+                                    "payment_method": {
+                                        "brand": "visa",
+                                        "last4": "4242"
+                                    },
+                                    "created_at": "2025-08-01T12:00:00Z",
+                                    "updated_at": "2025-08-01T12:00:00Z",
+                                    "business": {
+                                        "id": 1,
+                                        "name": "Mi Negocio"
+                                    },
+                                    "plan": {
+                                        "id": 3,
+                                        "code": "starter",
+                                        "name": "Starter",
+                                        "price_usd": "9.00",
+                                        "billing_interval": "month"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Subscriptions"
+                ],
+                "summary": "Eliminar una suscripción.",
+                "operationId": "68bec29ab804608309f737743f6e6303",
+                "parameters": [
+                    {
+                        "name": "subscription",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Eliminado"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Admin - Subscriptions"
+                ],
+                "summary": "Actualizar una suscripción.",
+                "description": "Puede cambiar plan, estado y fechas. Se valida que no haya solape\ntrial/active con otras suscripciones del mismo negocio.",
+                "operationId": "1a52d9902cb18a2ff9b1eaece85dd498",
+                "parameters": [
+                    {
+                        "name": "subscription",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "plan_id": {
+                                        "type": "integer",
+                                        "example": 4
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "trialing",
+                                            "active",
+                                            "past_due",
+                                            "canceled"
+                                        ],
+                                        "example": "past_due"
+                                    },
+                                    "current_period_start": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-09-01T00:00:00Z"
+                                    },
+                                    "current_period_end": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-09-30T23:59:59Z"
+                                    },
+                                    "trial_ends_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": null,
+                                        "nullable": true
+                                    },
+                                    "canceled_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": null,
+                                        "nullable": true
+                                    },
+                                    "cancel_at_period_end": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "external_ref": {
+                                        "type": "string",
+                                        "example": "sub_DEF"
+                                    },
+                                    "external_customer_id": {
+                                        "type": "string",
+                                        "example": "cus_456"
+                                    },
+                                    "payment_method": {
+                                        "type": "object",
+                                        "example": {
+                                            "brand": "mastercard",
+                                            "last4": "5555"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "id": 101,
+                                    "business_id": 1,
+                                    "plan_id": 4,
+                                    "status": "past_due",
+                                    "current_period_start": "2025-09-01T00:00:00Z",
+                                    "current_period_end": "2025-09-30T23:59:59Z",
+                                    "trial_ends_at": null,
+                                    "canceled_at": null,
+                                    "cancel_at_period_end": false,
+                                    "external_ref": "sub_DEF",
+                                    "external_customer_id": "cus_456",
+                                    "payment_method": {
+                                        "brand": "mastercard",
+                                        "last4": "5555"
+                                    },
+                                    "created_at": "2025-08-01T12:00:00Z",
+                                    "updated_at": "2025-09-01T12:00:00Z",
+                                    "business": {
+                                        "id": 1,
+                                        "name": "Mi Negocio"
+                                    },
+                                    "plan": {
+                                        "id": 4,
+                                        "code": "pro",
+                                        "name": "Pro",
+                                        "price_usd": "29.00",
+                                        "billing_interval": "month"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "403": {
+                        "description": "No autorizado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "409": {
+                        "description": "Conflicto de solapamiento",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "message": "Existe otra suscripción activa/trial que se solapa en el mismo periodo."
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/auth/login": {
             "post": {
                 "tags": [
@@ -1685,8 +4618,28 @@
             "description": "Roles y permisos (guard único: web). Requiere token y rol admin."
         },
         {
+            "name": "Admin - Businesses",
+            "description": "Gestión de negocios (requiere rol admin con guard api)"
+        },
+        {
+            "name": "Admin - Categories",
+            "description": "Gestión de categorías por negocio (requiere rol admin con guard api)"
+        },
+        {
+            "name": "Admin - Memberships",
+            "description": "Gestión de membresías (requiere rol admin con guard api)"
+        },
+        {
             "name": "Admin - Plans",
             "description": "Gestión de planes y límites (requiere rol admin con guard api)"
+        },
+        {
+            "name": "Admin - Products",
+            "description": "Gestión de productos (requiere token y permisos de admin)."
+        },
+        {
+            "name": "Admin - Subscriptions",
+            "description": "Gestión de suscripciones de negocios a planes (requiere rol admin con guard api)"
         },
         {
             "name": "Auth",

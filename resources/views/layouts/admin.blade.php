@@ -28,7 +28,7 @@
             </form>
 
             <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                Cerrar sesión
+                Cerrar sesión hola
             </a>
         </header>
 

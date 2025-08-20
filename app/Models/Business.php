@@ -19,4 +19,10 @@ class Business extends Model
         'settings' => 'array',
         'is_active' => 'boolean',
     ];
+
+    public function owner()     { return $this->belongsTo(User::class, 'owner_user_id'); }
+    public function categories(){ return $this->hasMany(Category::class); }
+    public function products()  { return $this->hasMany(Product::class); }
+    public function subscriptions(){ return $this->hasMany(Subscription::class); }
+    public function memberships(){ return $this->hasMany(Membership::class); }
 }

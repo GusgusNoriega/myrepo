@@ -1,9 +1,23 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
-@section('title', 'Seccion 1-2')
+@section('title', 'Panel — MyRepo')
+@section('page_title', 'Dashboard')
+
+{{-- Si quieres breadcrumbs personalizados, descomenta: --}}
+{{-- 
+@section('breadcrumbs')
+  <ol class="flex items-center gap-2">
+    <li><a href="{{ route('dashboard') }}" class="hover:text-gray-700">Inicio</a></li>
+    <li class="text-gray-400">/</li>
+    <li><a href="#" class="hover:text-gray-700">Analítica</a></li>
+    <li class="text-gray-400">/</li>
+    <li class="text-gray-700 font-medium" aria-current="page">Dashboard</li>
+  </ol>
+@endsection
+--}}
 
 @section('content')
-    <h2>Vista: Opción 1-2</h2>
+     <h2>Vista: Opción 1-2</h2>
     {{-- Imagen única --}}
 <input type="hidden" name="featured_image_id" id="featured_image_id"
        value=""
