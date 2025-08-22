@@ -9,7 +9,7 @@
   <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
     <div>
       <h1 class="text-2xl font-semibold tracking-tight">Productos</h1>
-      <p class="text-sm text-gray-500">Gestiona tu catálogo. Crea, edita y elimina productos.</p>
+      <p class="text-sm text-gray-500">Gestiona el catálogo de tu negocio.</p>
     </div>
     <div class="flex items-center gap-2">
       <button id="btnNew"
@@ -22,22 +22,15 @@
     </div>
   </div>
 
+  <!-- Alertas -->
+  <div id="alert" class="mb-4 hidden rounded-md border p-3 text-sm"></div>
+
   <!-- Vista: LISTA -->
   <section id="view-list" class="space-y-4">
-    <!-- Filtros sencillos -->
+    <!-- Filtros -->
     <div class="rounded-2xl border border-gray-200 bg-white p-4">
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-4">
-        <!-- Filtro por negocio -->
-        <div>
-          <label class="text-sm text-gray-600">Negocio (ID)</label>
-          <input id="business_filter" type="number" min="1"
-                 class="mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm"
-                 placeholder="Ej: 1"
-                 value="">
-          <p class="mt-1 text-xs text-gray-500">Déjalo vacío para ver todos los negocios.</p>
-        </div>
-
-        <!-- Búsqueda -->
+        <!-- SIN filtro de negocio: se fuerza el business_id del usuario -->
         <div class="sm:col-span-2">
           <label class="text-sm text-gray-600">Buscar</label>
           <input id="q" type="text" placeholder="Nombre, SKU o slug…"
@@ -45,7 +38,7 @@
         </div>
 
         <!-- Tamaño de página + botón -->
-        <div class="flex items-end gap-2">
+        <div class="flex items-end gap-2 sm:col-span-2">
           <div class="grow">
             <label class="text-sm text-gray-600">Tamaño</label>
             <select id="per_page"
@@ -129,13 +122,13 @@
     </div>
 
     <form id="productForm" class="rounded-2xl border border-gray-200 bg-white p-4 space-y-6">
-      <!-- Business + Category -->
+      <!-- Business fijo + Category -->
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
-          <label class="text-sm text-gray-600">Business ID*</label>
-          <input id="business_id" name="business_id" type="number" min="1" required
-                 class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm" placeholder="Ej: 1">
-          <p class="mt-1 text-xs text-gray-500">Obligatorio para admin (puedes mover el producto entre negocios).</p>
+          <label class="text-sm text-gray-600">Business ID (tu negocio)</label>
+          <input id="business_id_show" type="text" class="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm" readonly>
+          <input id="business_id" name="business_id" type="hidden">
+          <p class="mt-1 text-xs text-gray-500">Bloqueado a tu negocio. No se puede cambiar.</p>
         </div>
         <div class="sm:col-span-2">
           <label class="text-sm text-gray-600">Category ID (opcional)</label>
@@ -243,19 +236,19 @@
         </div>
       </div>
 
-      <!-- Media: inputs simples (sin JS) -->
+      <!-- Media: inputs simples -->
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label class="text-sm text-gray-600">Featured media ID (opcional)</label>
           <input id="featured_media_id" name="featured_media_id" type="number" min="1"
                  class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm" placeholder="Ej: 10">
-          <p class="mt-1 text-xs text-gray-500">Ingresa un ID de la tabla <code>media</code>.</p>
+          <p class="mt-1 text-xs text-gray-500">ID existente en <code>media</code> de tu negocio.</p>
         </div>
         <div>
           <label class="text-sm text-gray-600">Galería (IDs separados por coma)</label>
           <input id="gallery_media_ids" name="gallery_media_ids" type="text"
                  class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm" placeholder="11,12,13">
-          <p class="mt-1 text-xs text-gray-500">IDs de <code>media</code> separados por comas.</p>
+          <p class="mt-1 text-xs text-gray-500">IDs separados por coma.</p>
         </div>
       </div>
     </form>
@@ -274,16 +267,13 @@
 
 {{-- Script inline --}}
 <script>
-  // ====== Config del entorno (token) ======
+  // ====== Config del entorno ======
   const API_BASE   = '/api/admin/products';
   const API_TOKEN  = @json(session('api_token'));
+  const APP_BUS_ID = @json(auth()->user()->active_business_id ?? null); // << negocio del administrador
 
-  // ====== Estado UI ======
-  const UI = { mode: 'list', page: 1, perPage: 20, search: '', currentId: null };
-
-  // ====== Helpers DOM ======
+  // ====== Helpers UI ======
   const $ = (sel) => document.querySelector(sel);
-  const $$ = (sel) => document.querySelectorAll(sel);
   const show = (el) => el.classList.remove('hidden');
   const hide = (el) => el.classList.add('hidden');
   const loading = (on) => {
@@ -291,8 +281,19 @@
     on ? (o.classList.remove('hidden'), o.classList.add('flex'))
        : (o.classList.add('hidden'), o.classList.remove('flex'));
   };
+  const alertBox = document.getElementById('alert');
+  function showAlert(msg, type='warn') {
+    alertBox.classList.remove('hidden');
+    alertBox.textContent = msg;
+    alertBox.className = 'mb-4 rounded-md p-3 text-sm ' + (type === 'error'
+      ? 'border-red-300 bg-red-50 text-red-800'
+      : type === 'success'
+        ? 'border-green-300 bg-green-50 text-green-800'
+        : 'border-yellow-300 bg-yellow-50 text-yellow-800');
+  }
 
-  // ====== Elementos ======
+  // ====== Estado y elementos ======
+  const UI = { mode: 'list', page: 1, perPage: 20, search: '', currentId: null };
   const $viewList  = $('#view-list');
   const $viewForm  = $('#view-form');
   const $tbody     = $('#tbodyProducts');
@@ -303,16 +304,12 @@
   const $formTitle = $('#formTitle');
   const $btnNew    = $('#btnNew');
   const $btnBack   = $('#btnBack');
+  const $perPage   = document.getElementById('per_page');
+  const $pageInput = document.getElementById('page_input');
 
-  // Filtros
-  const $businessFilter = document.getElementById('business_filter');
-  const $perPage       = document.getElementById('per_page');
-  const $pageInput     = document.getElementById('page_input');
-  const $btnGoPage     = document.getElementById('btnGoPage');
-
-  // Campos del form
   const F = {
     business_id:        document.querySelector('#business_id'),
+    business_id_show:   document.querySelector('#business_id_show'),
     category_id:        document.querySelector('#category_id'),
     name:               document.querySelector('#name'),
     slug:               document.querySelector('#slug'),
@@ -333,36 +330,15 @@
     gallery_media_ids:  document.querySelector('#gallery_media_ids'),
   };
 
-  // ====== View toggles ======
-  function openList() {
-    UI.mode = 'list';
-    hide($viewForm);
-    show($viewList);
-    $form.reset();
-    $('#mediaPreview').innerHTML = '';
+  // ====== Seguridad de precondiciones ======
+  if (!API_TOKEN) {
+    showAlert('No hay API token en sesión. Configura session("api_token") para autenticar las llamadas.', 'error');
   }
-  function openFormCreate() {
-    UI.mode = 'create';
-    UI.currentId = null;
-    $form.reset();
-    $formTitle.textContent = 'Nuevo producto';
-    // Prefill con el filtro si existe
-    F.business_id.value = ($businessFilter?.value || '').trim();
-    $('#mediaPreview').innerHTML = '';
-    hide($viewList);
-    show($viewForm);
-  }
-  function openFormEdit(id) {
-    UI.mode = 'edit';
-    UI.currentId = id;
-    $form.reset();
-    $formTitle.textContent = 'Editar producto';
-    hide($viewList);
-    show($viewForm);
-    loadOne(id);
+  if (!APP_BUS_ID) {
+    showAlert('No tienes un negocio activo asignado. Define tu active_business_id para gestionar productos.', 'error');
   }
 
-  // ====== Fetch util ======
+  // ====== Fetch helper ======
   async function api(url, opts = {}) {
     const headers = opts.headers || {};
     headers['Accept'] = 'application/json';
@@ -377,28 +353,54 @@
     return res.json();
   }
 
+  // ====== Vistas ======
+  function openList() {
+    UI.mode = 'list';
+    hide($viewForm);
+    show($viewList);
+    $form.reset();
+    document.getElementById('mediaPreview').innerHTML = '';
+  }
+  function openFormCreate() {
+    UI.mode = 'create';
+    UI.currentId = null;
+    $form.reset();
+    $formTitle.textContent = 'Nuevo producto';
+    F.business_id.value = APP_BUS_ID ?? '';
+    F.business_id_show.value = APP_BUS_ID ?? '';
+    document.getElementById('mediaPreview').innerHTML = '';
+    hide($viewList);
+    show($viewForm);
+  }
+  function openFormEdit(id) {
+    UI.mode = 'edit';
+    UI.currentId = id;
+    $form.reset();
+    $formTitle.textContent = 'Editar producto';
+    hide($viewList);
+    show($viewForm);
+    loadOne(id);
+  }
+  window.openFormEdit = openFormEdit; // para botón de la tabla
+
   // ====== Listado ======
   async function loadList() {
+    if (!APP_BUS_ID) return; // no tiene negocio
     loading(true);
     try {
       const params = new URLSearchParams();
-
-      // Sincroniza búsqueda
-      const qVal = ($('#q')?.value || '').trim();
+      const qVal = (document.querySelector('#q')?.value || '').trim();
       UI.search = qVal;
 
-      // Business desde el filtro
-      const bizVal = ($businessFilter?.value || '').trim();
-      if (bizVal) params.set('business_id', bizVal);
-
+      // SIEMPRE forzar business_id del administrador
+      params.set('business_id', APP_BUS_ID);
       if (UI.search.length > 0) params.set('search', UI.search);
       params.set('per_page', UI.perPage);
       params.set('page', UI.page);
 
       const url = `${API_BASE}?${params.toString()}`;
-      console.log('[GET /products] URL =>', url);
-
       const json = await api(url);
+
       const rows = (json.data || []).map(p => renderRow(p)).join('');
       $tbody.innerHTML = rows || `<tr><td colspan="6" class="px-4 py-6 text-center text-gray-500">Sin resultados</td></tr>`;
 
@@ -420,7 +422,7 @@
       UI.perPage = pp;
     } catch (e) {
       console.error(e);
-      alert('Error cargando productos');
+      showAlert('Error cargando productos. ' + (e.message || ''), 'error');
     } finally {
       loading(false);
     }
@@ -467,8 +469,11 @@
     loading(true);
     try {
       const p = await api(`${API_BASE}/${id}`);
+      // Si la API está bien protegida, un producto de otro negocio devolverá 403/404;
+      // aquí solo llenamos si llegó OK.
+      F.business_id.value = APP_BUS_ID ?? '';
+      F.business_id_show.value = APP_BUS_ID ?? '';
 
-      F.business_id.value = p.business_id ?? '';
       F.category_id.value = p.category_id ?? '';
       F.name.value = p.name ?? '';
       F.slug.value = p.slug ?? '';
@@ -506,10 +511,10 @@
             <div class="mt-1 text-xs">${escapeHtml(g.name || '')}</div>
           </div>`);
       });
-      $('#mediaPreview').innerHTML = prev.join('');
+      document.getElementById('mediaPreview').innerHTML = prev.join('');
     } catch (e) {
       console.error(e);
-      alert('No se pudo cargar el producto');
+      showAlert('No autorizado o no encontrado.', 'error');
       openList();
     } finally {
       loading(false);
@@ -517,7 +522,7 @@
   }
 
   // ====== Guardar (create/update) ======
-  $form.addEventListener('submit', async (e) => {
+  document.getElementById('productForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
       const payload = readPayload();
@@ -528,13 +533,13 @@
           method: 'PATCH',
           body: JSON.stringify(payload)
         });
-        alert('Producto actualizado');
+        showAlert('Producto actualizado', 'success');
       } else {
         await api(API_BASE, {
           method: 'POST',
           body: JSON.stringify(payload)
         });
-        alert('Producto creado');
+        showAlert('Producto creado', 'success');
       }
 
       openList();
@@ -546,7 +551,7 @@
         const j = JSON.parse(err.message);
         if (j?.message) msg = j.message;
       } catch(_) {}
-      alert(msg);
+      showAlert(msg, 'error');
     } finally {
       loading(false);
     }
@@ -554,7 +559,7 @@
 
   function readPayload() {
     const payload = {
-      business_id: parseInt(F.business_id.value),
+      business_id: APP_BUS_ID ? parseInt(APP_BUS_ID) : null, // SIEMPRE forzado
       category_id: F.category_id.value ? parseInt(F.category_id.value) : null,
       name: F.name.value,
       slug: F.slug.value,
@@ -572,11 +577,11 @@
       dimensions: parseJsonLoose(F.dimensions.value),
       published_at: F.published_at.value ? new Date(F.published_at.value).toISOString() : null,
       featured_media_id: F.featured_media_id.value ? parseInt(F.featured_media_id.value) : null,
-      gallery_media_ids: (F.gallery_media_ids.value || '').trim(), // CSV
+      gallery_media_ids: (F.gallery_media_ids.value || '').trim(),
     };
 
-    if (!payload.business_id || isNaN(payload.business_id) || payload.business_id < 1) {
-      throw new Error('Business ID es obligatorio para admin.');
+    if (!payload.business_id) {
+      throw new Error('No hay negocio activo. No puedes crear/editar productos.');
     }
     return payload;
   }
@@ -594,15 +599,16 @@
     loading(true);
     try {
       await api(`${API_BASE}/${id}`, { method: 'DELETE' });
+      showAlert('Producto eliminado', 'success');
       await loadList();
     } catch (e) {
       console.error(e);
-      alert('No se pudo eliminar');
+      showAlert('No se pudo eliminar', 'error');
     } finally {
       loading(false);
     }
   }
-  window.deleteProduct = deleteProduct; // para botones inline
+  window.deleteProduct = deleteProduct;
 
   // ====== Utilidades ======
   function toDatetimeLocal(iso) {
@@ -621,33 +627,19 @@
     }[m]));
   }
 
-  // ====== Eventos UI ======
-  $btnNew.addEventListener('click', openFormCreate);
-  $btnBack.addEventListener('click', openList);
+  // ====== Eventos ======
+  document.getElementById('btnNew').addEventListener('click', openFormCreate);
+  document.getElementById('btnBack').addEventListener('click', openList);
 
-  // Búsqueda
-  $('#btnSearch').addEventListener('click', () => {
-    UI.search = ($('#q').value || '').trim();
+  document.getElementById('btnSearch').addEventListener('click', () => {
+    UI.search = (document.getElementById('q').value || '').trim();
     UI.page = 1;
     loadList();
   });
-  $('#q').addEventListener('keypress', (e) => {
+  document.getElementById('q').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      UI.search = ($('#q').value || '').trim();
-      UI.page = 1;
-      loadList();
-    }
-  });
-
-  // Cambiar negocio
-  $businessFilter?.addEventListener('change', () => {
-    UI.page = 1;
-    loadList();
-  });
-  $businessFilter?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
+      UI.search = (document.getElementById('q').value || '').trim();
       UI.page = 1;
       loadList();
     }
@@ -661,7 +653,7 @@
   });
 
   // Ir a página concreta
-  $btnGoPage?.addEventListener('click', () => {
+  document.getElementById('btnGoPage')?.addEventListener('click', () => {
     UI.page = Math.max(1, parseInt($pageInput.value || '1'));
     loadList();
   });
@@ -673,13 +665,28 @@
     }
   });
 
-  // Exponer para botón "Editar" de cada fila
-  window.openFormEdit = openFormEdit;
+  // Paginadores
+  $prev.addEventListener('click', () => {
+    if (UI.page > 1) {
+      UI.page--;
+      if ($pageInput) $pageInput.value = UI.page;
+      loadList();
+    }
+  });
+  $next.addEventListener('click', () => {
+    UI.page++;
+    if ($pageInput) $pageInput.value = UI.page;
+    loadList();
+  });
 
   // ====== Init ======
   (function init() {
     if ($perPage)   UI.perPage = parseInt($perPage.value || '20');
     if ($pageInput) $pageInput.value = UI.page;
+
+    // Prefijar business en formulario (por si se abre crear)
+    F.business_id.value = APP_BUS_ID ?? '';
+    F.business_id_show.value = APP_BUS_ID ?? '';
 
     openList();
     loadList();

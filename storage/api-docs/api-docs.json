@@ -4188,6 +4188,336 @@
                 ]
             }
         },
+        "/api/admin/users": {
+            "get": {
+                "tags": [
+                    "Admin - Users"
+                ],
+                "summary": "Listado de usuarios (paginado + filtros).",
+                "description": "Filtros:\n- search: coincide en name o email\n- role: nombre del rol (guard web)\n- business_id: lista usuarios que pertenezcan (via memberships) a ese negocio\n- per_page, page",
+                "operationId": "4923da999f897b1449277372f57444c9",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "role",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "business_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 20
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "data": [
+                                        {
+                                            "id": 7,
+                                            "name": "Jane Doe",
+                                            "email": "jane@example.com",
+                                            "active_business_id": 1,
+                                            "roles": [
+                                                "admin",
+                                                "editor"
+                                            ],
+                                            "permissions": [
+                                                "posts.view"
+                                            ],
+                                            "memberships": [
+                                                {
+                                                    "id": 12,
+                                                    "business": {
+                                                        "id": 1,
+                                                        "name": "Mi Negocio"
+                                                    },
+                                                    "role": "editor",
+                                                    "state": "active"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "meta": {
+                                        "current_page": 1,
+                                        "last_page": 3,
+                                        "per_page": 20,
+                                        "total": 41
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - Users"
+                ],
+                "summary": "Crear usuario (solo datos del usuario). Para roles/permisos y membresías usar los endpoints dedicados.",
+                "operationId": "317f9ed1a14dd4d9908423c7ede6e73f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Jane Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "jane@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "secret123"
+                                    },
+                                    "active_business_id": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Creado"
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/users/{user}": {
+            "get": {
+                "tags": [
+                    "Admin - Users"
+                ],
+                "summary": "Mostrar un usuario con relaciones agregadas (roles/permisos web, memberships, negocio activo).",
+                "operationId": "2b6839ae263d280a6f17e89fcf8e008e",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Users"
+                ],
+                "summary": "Eliminar usuario.",
+                "operationId": "1e280b5678339407866c93bb08423034",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Eliminado"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Admin - Users"
+                ],
+                "summary": "Actualizar usuario (datos básicos + active_business_id).",
+                "operationId": "46581182b87f773db33ed2a2a1f6cf7b",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "active_business_id": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/users/{user}/active-business": {
+            "patch": {
+                "tags": [
+                    "Admin - Users"
+                ],
+                "summary": "Establece el active_business_id del usuario (debe pertenecer al negocio o ser owner).",
+                "description": "Cambiar el negocio activo de un usuario validando pertenencia.",
+                "operationId": "cae7c28ddba332c0217feac01547f176",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "business_id"
+                                ],
+                                "properties": {
+                                    "business_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "422": {
+                        "description": "Validación o pertenencia fallida"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/auth/login": {
             "post": {
                 "tags": [
@@ -4640,6 +4970,10 @@
         {
             "name": "Admin - Subscriptions",
             "description": "Gestión de suscripciones de negocios a planes (requiere rol admin con guard api)"
+        },
+        {
+            "name": "Admin - Users",
+            "description": "Gestión de usuarios (CRUD) y lectura agregada de relaciones. Para roles/permisos usar AclUserController; para membresías usar MembershipController."
         },
         {
             "name": "Auth",

@@ -4,61 +4,15 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
-use OpenApi\Annotations as OA;
+use Spatie\Permission\PermissionRegistrar;
 
-/**
- * @OA\Tag(
- *   name="Admin - ACL",
- *   description="Roles y permisos (guard único: web). Requiere token y rol admin."
- * )
- */
 class RoleController extends Controller
 {
-   /**
-     * @OA\Get(
-     *   path="/api/admin/roles",
-     *   tags={"Admin - ACL"},
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
-     *   @OA\Parameter(name="per_page", in="query", @OA\Schema(type="integer", example=25)),
-     *   @OA\Response(
-     *     response=200, description="OK",
-     *     @OA\JsonContent(
-     *       type="object",
-     *       @OA\Property(
-     *         property="data", type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(property="id", type="integer"),
-     *           @OA\Property(property="name", type="string"),
-     *           @OA\Property(property="guard_name", type="string", example="web"),
-     *           @OA\Property(
-     *             property="permissions", type="array",
-     *             @OA\Items(
-     *               type="object",
-     *               @OA\Property(property="id", type="integer"),
-     *               @OA\Property(property="name", type="string"),
-     *               @OA\Property(property="guard_name", type="string", example="web")
-     *             )
-     *           ),
-     *           @OA\Property(property="created_at", type="string", format="date-time", nullable=true),
-     *           @OA\Property(property="updated_at", type="string", format="date-time", nullable=true)
-     *         )
-     *       ),
-     *       @OA\Property(
-     *         property="meta", type="object",
-     *         @OA\Property(property="current_page", type="integer"),
-     *         @OA\Property(property="last_page", type="integer"),
-     *         @OA\Property(property="per_page", type="integer"),
-     *         @OA\Property(property="total", type="integer")
-     *       )
-     *     )
-     *   )
-     * )
-     */
+    /** Listar SOLO roles del guard web (para evitar duplicados en UI) */
     public function index(Request $request)
     {
         $q = Role::query()->where('guard_name', 'web')->with('permissions');
@@ -80,197 +34,117 @@ class RoleController extends Controller
         ]);
     }
 
-    /**
-     * @OA\Post(
-     *   path="/api/admin/roles",
-     *   tags={"Admin - ACL"},
-     *   security={{"bearerAuth":{}}},
-     *   @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *       required={"name"},
-     *       @OA\Property(property="name", type="string", example="editor"),
-     *       @OA\Property(
-     *         property="permissions", type="array",
-     *         @OA\Items(type="string"), example={"posts.view","posts.create"}
-     *       )
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=201, description="Creado",
-     *     @OA\JsonContent(
-     *       type="object",
-     *       @OA\Property(property="id", type="integer"),
-     *       @OA\Property(property="name", type="string"),
-     *       @OA\Property(property="guard_name", type="string", example="web"),
-     *       @OA\Property(
-     *         property="permissions", type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(property="id", type="integer"),
-     *           @OA\Property(property="name", type="string"),
-     *           @OA\Property(property="guard_name", type="string", example="web")
-     *         )
-     *       )
-     *     )
-     *   )
-     * )
-     */
+    /** Crear role (web) y su gemelo (api). Opcionalmente asigna permisos (a ambos). */
     public function store(Request $request)
     {
+        $rolesTable = config('permission.table_names.roles', 'roles');
+
         $data = $request->validate([
-            'name'              => ['required','string','max:255', Rule::unique(config('permission.table_names.roles'),'name')->where('guard_name','web')],
+            'name'              => ['required','string','max:255', Rule::unique($rolesTable, 'name')->where('guard_name', 'web')],
             'permissions'       => ['array'],
             'permissions.*'     => ['string'],
         ]);
 
-        $role = Role::create(['name' => $data['name'], 'guard_name' => 'web']);
+        return DB::transaction(function () use ($data) {
+            // Crear/asegurar en ambos guards
+            $roleWeb = Role::create(['name' => $data['name'], 'guard_name' => 'web']);
+            $roleApi = Role::firstOrCreate(['name' => $data['name'], 'guard_name' => 'api']);
 
-        if (!empty($data['permissions'])) {
-            $perms = Permission::where('guard_name','web')->whereIn('name', $data['permissions'])->get();
-            $role->syncPermissions($perms);
-        }
+            // Sincronizar permisos si vinieron
+            if (!empty($data['permissions'])) {
+                $webPerms = Permission::where('guard_name','web')->whereIn('name', $data['permissions'])->get();
 
-        return response()->json($role->load('permissions'), 201);
+                // Asegurar que existan también en api con los mismos nombres
+                foreach ($data['permissions'] as $permName) {
+                    Permission::firstOrCreate(['name'=>$permName, 'guard_name'=>'api']);
+                }
+                $apiPerms = Permission::where('guard_name','api')->whereIn('name', $data['permissions'])->get();
+
+                $roleWeb->syncPermissions($webPerms);
+                $roleApi->syncPermissions($apiPerms);
+            }
+
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
+            return response()->json($roleWeb->load('permissions'), 201);
+        });
     }
 
-    /**
-     * @OA\Get(
-     *   path="/api/admin/roles/{role}",
-     *   tags={"Admin - ACL"},
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(name="role", in="path", required=true, @OA\Schema(type="integer")),
-     *   @OA\Response(
-     *     response=200, description="OK",
-     *     @OA\JsonContent(
-     *       type="object",
-     *       @OA\Property(property="id", type="integer"),
-     *       @OA\Property(property="name", type="string"),
-     *       @OA\Property(property="guard_name", type="string", example="web"),
-     *       @OA\Property(
-     *         property="permissions", type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(property="id", type="integer"),
-     *           @OA\Property(property="name", type="string"),
-     *           @OA\Property(property="guard_name", type="string", example="web")
-     *         )
-     *       )
-     *     )
-     *   )
-     * )
-     */
+    /** Mostrar SOLO roles del guard web */
     public function show(Role $role)
     {
         abort_if($role->guard_name !== 'web', 404);
         return response()->json($role->load('permissions'));
     }
 
-    /**
-     * @OA\Patch(
-     *   path="/api/admin/roles/{role}",
-     *   tags={"Admin - ACL"},
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(name="role", in="path", required=true, @OA\Schema(type="integer")),
-     *   @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *       @OA\Property(property="name", type="string", example="editor-plus"),
-     *       @OA\Property(property="permissions", type="array", @OA\Items(type="string"))
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200, description="OK",
-     *     @OA\JsonContent(
-     *       type="object",
-     *       @OA\Property(property="id", type="integer"),
-     *       @OA\Property(property="name", type="string"),
-     *       @OA\Property(property="guard_name", type="string", example="web"),
-     *       @OA\Property(
-     *         property="permissions", type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(property="id", type="integer"),
-     *           @OA\Property(property="name", type="string"),
-     *           @OA\Property(property="guard_name", type="string", example="web")
-     *         )
-     *       )
-     *     )
-     *   )
-     * )
-     */
+    /** Renombrar role (web) y su gemelo (api). También puede re-sincronizar permisos si se envían. */
     public function update(Request $request, Role $role)
     {
         abort_if($role->guard_name !== 'web', 404);
 
+        $rolesTable = config('permission.table_names.roles', 'roles');
+
         $data = $request->validate([
-            'name'          => ['sometimes','string','max:255', Rule::unique(config('permission.table_names.roles'),'name')->ignore($role->id)->where('guard_name','web')],
-            'permissions'   => ['sometimes','array'],
+            'name'          => ['required','string','max:255', Rule::unique($rolesTable, 'name')->ignore($role->id)->where('guard_name','web')],
+            'permissions'   => ['array'],
             'permissions.*' => ['string'],
         ]);
 
-        if (array_key_exists('name', $data)) {
+        return DB::transaction(function () use ($role, $data) {
+            // Renombrar WEB
+            $oldName = $role->name;
             $role->name = $data['name'];
             $role->save();
-        }
 
-        if (array_key_exists('permissions', $data)) {
-            $perms = Permission::where('guard_name','web')->whereIn('name', $data['permissions'])->get();
-            $role->syncPermissions($perms);
-        }
+            // Renombrar/generar API gemelo
+            $apiRole = Role::firstOrCreate(['name' => $oldName, 'guard_name' => 'api']);
+            // Validar que no haya conflicto en api con el nuevo nombre
+            $conflict = Role::where('guard_name','api')->where('name',$data['name'])->where('id','<>',$apiRole->id)->exists();
+            if ($conflict) {
+                abort(422, "Ya existe un rol API con el nombre '{$data['name']}'");
+            }
+            $apiRole->name = $data['name'];
+            $apiRole->save();
 
-        return response()->json($role->fresh()->load('permissions'));
+            // Si se mandó lista de permisos, sincronizar ambos
+            if (array_key_exists('permissions', $data)) {
+                $names = $data['permissions'] ?? [];
+
+                // Asegurar existencia en ambos guards
+                foreach ($names as $permName) {
+                    Permission::firstOrCreate(['name'=>$permName, 'guard_name'=>'web']);
+                    Permission::firstOrCreate(['name'=>$permName, 'guard_name'=>'api']);
+                }
+
+                $webPerms = Permission::where('guard_name','web')->whereIn('name', $names)->get();
+                $apiPerms = Permission::where('guard_name','api')->whereIn('name', $names)->get();
+
+                $role->syncPermissions($webPerms);
+                $apiRole->syncPermissions($apiPerms);
+            }
+
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
+            return response()->json($role->fresh()->load('permissions'));
+        });
     }
 
-   /**
-     * @OA\Delete(
-     *   path="/api/admin/roles/{role}",
-     *   tags={"Admin - ACL"},
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(name="role", in="path", required=true, @OA\Schema(type="integer")),
-     *   @OA\Response(response=204, description="Eliminado")
-     * )
-     */
+    /** Borrar role (web) y su gemelo (api) */
     public function destroy(Role $role)
     {
         abort_if($role->guard_name !== 'web', 404);
-        $role->delete();
-        return response()->json(null, 204);
+
+        return DB::transaction(function () use ($role) {
+            $name = $role->name;
+            $role->delete();
+
+            $api = Role::where('guard_name','api')->where('name',$name)->first();
+            if ($api) { $api->delete(); }
+
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
+            return response()->json(null, 204);
+        });
     }
 
-    /**
-     * @OA\Put(
-     *   path="/api/admin/roles/{role}/permissions",
-     *   tags={"Admin - ACL"},
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(name="role", in="path", required=true, @OA\Schema(type="integer")),
-     *   @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *       required={"items"},
-     *       @OA\Property(property="items", type="array", @OA\Items(type="string"), example={"posts.view","posts.create"})
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200, description="OK",
-     *     @OA\JsonContent(
-     *       type="object",
-     *       @OA\Property(property="id", type="integer"),
-     *       @OA\Property(property="name", type="string"),
-     *       @OA\Property(property="guard_name", type="string", example="web"),
-     *       @OA\Property(
-     *         property="permissions", type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(property="id", type="integer"),
-     *           @OA\Property(property="name", type="string"),
-     *           @OA\Property(property="guard_name", type="string", example="web")
-     *         )
-     *       )
-     *     )
-     *   )
-     * )
-     */
+    /** Sincronizar permisos a un rol (web) y espejo (api) */
     public function syncPermissions(Request $request, Role $role)
     {
         abort_if($role->guard_name !== 'web', 404);
@@ -280,9 +154,22 @@ class RoleController extends Controller
             'items.*' => ['string'],
         ]);
 
-        $perms = Permission::where('guard_name','web')->whereIn('name', $data['items'])->get();
-        $role->syncPermissions($perms);
+        return DB::transaction(function () use ($role, $data) {
+            // Asegurar permisos en ambos guards
+            foreach ($data['items'] as $permName) {
+                Permission::firstOrCreate(['name'=>$permName, 'guard_name'=>'web']);
+                Permission::firstOrCreate(['name'=>$permName, 'guard_name'=>'api']);
+            }
 
-        return response()->json($role->fresh()->load('permissions'));
+            $webPerms = Permission::where('guard_name','web')->whereIn('name', $data['items'])->get();
+            $role->syncPermissions($webPerms);
+
+            $apiRole = Role::firstOrCreate(['name'=>$role->name, 'guard_name'=>'api']);
+            $apiPerms = Permission::where('guard_name','api')->whereIn('name', $data['items'])->get();
+            $apiRole->syncPermissions($apiPerms);
+
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
+            return response()->json($role->fresh()->load('permissions'));
+        });
     }
 }

@@ -60,6 +60,12 @@ Route::view('/admin/suscripciones', 'admin.suscripciones.index')->name('admin.su
 Route::view('/admin/categorias', 'admin.categorias.index')->name('admin.categorias');
 Route::view('/admin/negocios', 'admin.negocios.index')->name('admin.negocios');
 Route::view('/admin/media', 'admin.media.index')->name('admin.media');
+Route::view('/admin/usuarios', 'admin.usuarios.index')->name('admin.usuarios');
+
+Route::view('/admin/mi-negocio', 'administrador.negocio.index')->name('administrador.negocio');
+Route::view('/admin/mis-categorias', 'administrador.categorias.index')->name('administrador.mis-categorias');
+Route::view('/admin/mis-productos', 'administrador.products.index')->name('administrador.products');
+Route::view('/admin/mi-perfil', 'administrador.perfil.index')->name('administrador.perfil');
 
 
 

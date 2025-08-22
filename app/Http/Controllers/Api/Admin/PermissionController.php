@@ -4,47 +4,14 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Permission;
-use OpenApi\Annotations as OA;
+use Spatie\Permission\PermissionRegistrar;
 
-/**
- * @OA\Tag(name="Admin - ACL", description="Roles y permisos (guard: web)")
- */
 class PermissionController extends Controller
 {
-    /**
-     * @OA\Get(
-     *   path="/api/admin/permissions",
-     *   tags={"Admin - ACL"},
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
-     *   @OA\Response(
-     *     response=200, description="OK",
-     *     @OA\JsonContent(
-     *       type="object",
-     *       @OA\Property(
-     *         property="data", type="array",
-     *         @OA\Items(
-     *           type="object",
-     *           @OA\Property(property="id", type="integer"),
-     *           @OA\Property(property="name", type="string"),
-     *           @OA\Property(property="guard_name", type="string", example="web"),
-     *           @OA\Property(property="created_at", type="string", format="date-time", nullable=true),
-     *           @OA\Property(property="updated_at", type="string", format="date-time", nullable=true)
-     *         )
-     *       ),
-     *       @OA\Property(
-     *         property="meta", type="object",
-     *         @OA\Property(property="current_page", type="integer", example=1),
-     *         @OA\Property(property="last_page", type="integer", example=1),
-     *         @OA\Property(property="per_page", type="integer", example=0),
-     *         @OA\Property(property="total", type="integer", example=0)
-     *       )
-     *     )
-     *   )
-     * )
-     */
+    /** Listar SOLO permisos del guard web */
     public function index(Request $request)
     {
         $q = Permission::where('guard_name','web');
@@ -59,119 +26,72 @@ class PermissionController extends Controller
         ]);
     }
 
-    /**
-     * @OA\Post(
-     *   path="/api/admin/permissions",
-     *   tags={"Admin - ACL"},
-     *   security={{"bearerAuth":{}}},
-     *   @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *       required={"name"},
-     *       @OA\Property(property="name", type="string", example="orders.update")
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=201, description="Creado",
-     *     @OA\JsonContent(
-     *       type="object",
-     *       @OA\Property(property="id", type="integer"),
-     *       @OA\Property(property="name", type="string"),
-     *       @OA\Property(property="guard_name", type="string", example="web"),
-     *       @OA\Property(property="created_at", type="string", format="date-time", nullable=true),
-     *       @OA\Property(property="updated_at", type="string", format="date-time", nullable=true)
-     *     )
-     *   )
-     * )
-     */
+    /** Crear permiso en web y api */
     public function store(Request $request)
     {
+        $permsTable = config('permission.table_names.permissions', 'permissions');
+
         $data = $request->validate([
-            'name' => ['required','string','max:255', Rule::unique(config('permission.table_names.permissions'),'name')->where('guard_name','web')],
+            'name' => ['required','string','max:255', Rule::unique($permsTable, 'name')->where('guard_name','web')],
         ]);
 
-        $perm = Permission::create(['name'=>$data['name'],'guard_name'=>'web']);
-        return response()->json($perm, 201);
+        return DB::transaction(function () use ($data) {
+            $web = Permission::create(['name'=>$data['name'],'guard_name'=>'web']);
+            Permission::firstOrCreate(['name'=>$data['name'],'guard_name'=>'api']);
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
+            return response()->json($web, 201);
+        });
     }
 
-    /**
-     * @OA\Get(
-     *   path="/api/admin/permissions/{permission}",
-     *   tags={"Admin - ACL"},
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(name="permission", in="path", required=true, @OA\Schema(type="integer")),
-     *   @OA\Response(
-     *     response=200, description="OK",
-     *     @OA\JsonContent(
-     *       type="object",
-     *       @OA\Property(property="id", type="integer"),
-     *       @OA\Property(property="name", type="string"),
-     *       @OA\Property(property="guard_name", type="string", example="web"),
-     *       @OA\Property(property="created_at", type="string", format="date-time", nullable=true),
-     *       @OA\Property(property="updated_at", type="string", format="date-time", nullable=true)
-     *     )
-     *   )
-     * )
-     */
+    /** Mostrar SOLO permiso web */
     public function show(Permission $permission)
     {
         abort_if($permission->guard_name !== 'web', 404);
         return response()->json($permission);
     }
 
-   /**
-     * @OA\Patch(
-     *   path="/api/admin/permissions/{permission}",
-     *   tags={"Admin - ACL"},
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(name="permission", in="path", required=true, @OA\Schema(type="integer")),
-     *   @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *       required={"name"},
-     *       @OA\Property(property="name", type="string", example="orders.manage")
-     *     )
-     *   ),
-     *   @OA\Response(
-     *     response=200, description="OK",
-     *     @OA\JsonContent(
-     *       type="object",
-     *       @OA\Property(property="id", type="integer"),
-     *       @OA\Property(property="name", type="string"),
-     *       @OA\Property(property="guard_name", type="string", example="web"),
-     *       @OA\Property(property="created_at", type="string", format="date-time", nullable=true),
-     *       @OA\Property(property="updated_at", type="string", format="date-time", nullable=true)
-     *     )
-     *   )
-     * )
-     */
+    /** Renombrar en web y api */
     public function update(Request $request, Permission $permission)
     {
         abort_if($permission->guard_name !== 'web', 404);
 
+        $permsTable = config('permission.table_names.permissions', 'permissions');
+
         $data = $request->validate([
-            'name' => ['required','string','max:255', Rule::unique(config('permission.table_names.permissions'),'name')->ignore($permission->id)->where('guard_name','web')],
+            'name' => ['required','string','max:255', Rule::unique($permsTable,'name')->ignore($permission->id)->where('guard_name','web')],
         ]);
 
-        $permission->name = $data['name'];
-        $permission->save();
+        return DB::transaction(function () use ($permission, $data) {
+            $old = $permission->name;
+            $permission->name = $data['name'];
+            $permission->save();
 
-        return response()->json($permission);
+            $api = Permission::firstOrCreate(['name'=>$old,'guard_name'=>'api']);
+            // validar conflicto en api
+            $conflict = Permission::where('guard_name','api')->where('name',$data['name'])->where('id','<>',$api->id)->exists();
+            if ($conflict) {
+                abort(422, "Ya existe un permiso API con el nombre '{$data['name']}'");
+            }
+            $api->name = $data['name'];
+            $api->save();
+
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
+            return response()->json($permission);
+        });
     }
 
-    /**
-     * @OA\Delete(
-     *   path="/api/admin/permissions/{permission}",
-     *   tags={"Admin - ACL"},
-     *   security={{"bearerAuth":{}}},
-     *   @OA\Parameter(name="permission", in="path", required=true, @OA\Schema(type="integer")),
-     *   @OA\Response(response=204, description="Eliminado")
-     * )
-     */
+    /** Borrar en web y api */
     public function destroy(Permission $permission)
     {
         abort_if($permission->guard_name !== 'web', 404);
-        $permission->delete();
-        return response()->json(null, 204);
+
+        return DB::transaction(function () use ($permission) {
+            $name = $permission->name;
+            $permission->delete();
+            $api = Permission::where('guard_name','api')->where('name',$name)->first();
+            if ($api) { $api->delete(); }
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
+            return response()->json(null, 204);
+        });
     }
 }

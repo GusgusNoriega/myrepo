@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\Admin\MembershipController;
 use App\Http\Controllers\Api\Admin\SubscriptionController;
 use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\Admin\BusinessController;
+use App\Http\Controllers\Api\Admin\UserAdminController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -69,7 +71,7 @@ Route::prefix('admin')
         Route::put('users/{user}/permissions', [AclUserController::class, 'syncPermissions']);
     });
 
-Route::middleware(['auth:api', 'role:admin'])
+Route::middleware(['auth:api'])
     ->prefix('admin')
     ->group(function () {
         Route::apiResource('products', ProductController::class);
@@ -96,12 +98,22 @@ Route::middleware(['auth:api']) // agrega tus middlewares (role:admin) si corres
             ->only(['index','show','store','update','destroy']);
     });
 
-Route::middleware(['auth:api']) // agrega 'role:admin' si corresponde
+Route::middleware(['auth:api'])
     ->prefix('admin')
     ->group(function () {
+        Route::get('my-business', [BusinessController::class, 'myBusiness']);
+        Route::patch('my-business', [BusinessController::class, 'updateMyBusiness']);
         Route::apiResource('businesses', BusinessController::class)
             ->only(['index','show','store','update','destroy']);
     });
+
+Route::middleware(['auth:api']) // ajusta a tu middleware real
+    ->prefix('admin')->group(function () {
+        Route::apiResource('users', UserAdminController::class)
+            ->only(['index','show','store','update','destroy']);
+        Route::patch('users/{user}/active-business', [UserAdminController::class, 'setActiveBusiness']);
+    });
+
 
 
 
