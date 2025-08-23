@@ -19,9 +19,11 @@ use L5Swagger\Http\Controllers\SwaggerController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::view('/', 'paginas.inicio')->name('home');
+Route::view('/contacto', 'paginas.contacto')->name('contacto');
+Route::view('/sobre', 'paginas.sobre')->name('sobre');
+Route::view('/demo', 'paginas.demo')->name('demo');
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -40,6 +42,7 @@ Route::middleware('guest')->group(function () {
     // Login
     Route::get ('/login',    [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('/login',    [AuthenticatedSessionController::class, 'store']);
+
 
     // Registro (quítalo si no lo necesitas)
     Route::get ('/register', [RegisteredUserController::class,     'create'])->name('register');

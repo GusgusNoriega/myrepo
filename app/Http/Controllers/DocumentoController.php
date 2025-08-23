@@ -19,21 +19,14 @@ class DocumentoController extends Controller
         return $bizId;
     }
 
-    /**
-     * Devuelve true si el usuario actual puede gestionar TODOS los medios del negocio:
-     * - Tiene rol global 'admin' (Spatie)
-     * - O tiene membresía 'owner'/'admin' activa en ese negocio
-     */
-    protected function canManageAll(Request $request, int $bizId): bool
+    protected function isSuperAdmin($user): bool
     {
-        $user = $request->user();
+        return $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
+    }
+
+    protected function isBizAdmin($user, int $bizId): bool
+    {
         if (!$user) return false;
-
-        // Rol global admin (Spatie\Permission)
-        $isSuperAdmin = method_exists($user, 'hasRole') && $user->hasRole('admin');
-        if ($isSuperAdmin) return true;
-
-        // Rol por membresía del negocio (owner/admin activos)
         $role = DB::table('memberships')
             ->where('business_id', $bizId)
             ->where('user_id', $user->id)
@@ -71,17 +64,18 @@ class DocumentoController extends Controller
         }
 
         return [
-            'id'          => $m->id,
-            'type'        => $type,
-            'name'        => $m->file_name,
-            'title'       => $title,
-            'alt'         => $alt,
-            'tags'        => array_values(array_unique($tags)),
-            'size'        => (int) $m->size,
-            'created_at'  => optional($m->created_at)->toIso8601String(),
-            'url'         => $m->getFullUrl(),
-            'mime'        => $m->mime_type,
+            'id'            => $m->id,
+            'type'          => $type,
+            'name'          => $m->file_name,
+            'title'         => $title,
+            'alt'           => $alt,
+            'tags'          => array_values(array_unique($tags)),
+            'size'          => (int) $m->size,
+            'created_at'    => optional($m->created_at)->toIso8601String(),
+            'url'           => $m->getFullUrl(),
+            'mime'          => $m->mime_type,
             'owner_user_id' => $m->owner_user_id,
+            'business_id'   => $m->business_id,
         ];
     }
 
@@ -92,8 +86,8 @@ class DocumentoController extends Controller
             $query->where(function($q) use ($like) {
                 $q->where('file_name', 'like', $like)
                   ->orWhere('name', 'like', $like)
-                  ->orWhereRaw("JSON_EXTRACT(custom_properties, '$.title') LIKE ?", [$like])
-                  ->orWhereRaw("JSON_EXTRACT(custom_properties, '$.alt') LIKE ?", [$like])
+                  ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(custom_properties, '$.title')) LIKE ?", [$like])
+                  ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(custom_properties, '$.alt')) LIKE ?", [$like])
                   ->orWhereRaw("JSON_SEARCH(JSON_EXTRACT(custom_properties, '$.tags'), 'one', ?) IS NOT NULL", [$like]);
             });
         }
@@ -152,7 +146,6 @@ class DocumentoController extends Controller
         $row = DB::table('usage_counters')->where('business_id', $bizId)->first();
 
         if (!$row) {
-            // Fallback: calcula desde media y crea la fila
             $agg = DB::table('media')
                 ->where('business_id', $bizId)
                 ->selectRaw('COALESCE(SUM(size),0) as bytes, COUNT(*) as cnt')
@@ -184,17 +177,48 @@ class DocumentoController extends Controller
     public function mediaIndex(Request $request)
     {
         $perPage = (int) $request->query('per_page', 18);
-        $bizId   = $this->currentBusinessId($request);
+        $user    = $request->user();
+
+        // Admin global: puede ver todo, opcionalmente filtrar por ?business_id
+        if ($this->isSuperAdmin($user)) {
+            $query = MediaModel::query();
+
+            if ($request->filled('business_id')) {
+                $query->where('business_id', (int) $request->query('business_id'));
+            }
+
+            $this->applyMediaFilters($request, $query);
+            $p = $query->paginate($perPage)->appends($request->all());
+
+            return response()->json([
+                'data' => $p->getCollection()->map(fn($m) => $this->mediaToResource($m))->values(),
+                'meta' => [
+                    'current_page'  => $p->currentPage(),
+                    'last_page'     => $p->lastPage(),
+                    'from'          => $p->firstItem() ?? 0,
+                    'to'            => $p->lastItem() ?? 0,
+                    'per_page'      => $p->perPage(),
+                    'total'         => $p->total(),
+                    'next_page_url' => $p->nextPageUrl(),
+                    'prev_page_url' => $p->previousPageUrl(),
+                ],
+            ]);
+        }
+
+        // No admin: siempre por negocio activo
+        $bizId = $this->currentBusinessId($request);
+
+        // Autorización por Policy (viewAny con $bizId)
+        $this->authorize('viewAny', [MediaModel::class, $bizId]);
 
         $query = MediaModel::query()->where('business_id', $bizId);
 
-        // ⬇️ Si NO puede gestionar todo, limitar a sus propios archivos
-        if (!$this->canManageAll($request, $bizId)) {
-            $query->where('owner_user_id', optional($request->user())->id);
+        // Si NO es admin de negocio, limitar a sus propios archivos
+        if (!$this->isBizAdmin($user, $bizId)) {
+            $query->where('owner_user_id', $user->id);
         }
 
         $this->applyMediaFilters($request, $query);
-
         $p = $query->paginate($perPage)->appends($request->all());
 
         return response()->json([
@@ -240,7 +264,7 @@ class DocumentoController extends Controller
             ],
             'usage' => [
                 'used_bytes'        => $usage['used_bytes'],
-                'used_human'        => $this->fmtBytes($usage['used_bytes']),
+                'used_human'        => $this->fmtBytes($usage['used_bytes'] ?? 0),
                 'remaining_bytes'   => $remaining,
                 'remaining_human'   => is_null($remaining) ? null : $this->fmtBytes($remaining),
                 'percent'           => (is_int($limit) && $limit > 0)
@@ -261,15 +285,25 @@ class DocumentoController extends Controller
             'files.*'   => 'file|max:51200',
         ]);
 
-        $bizId = $this->currentBusinessId($request);
         $user  = $request->user();
 
-        // ✅ Admin puede especificar opcionalmente owner_user_id para subir en nombre de otro
-        $ownerId = optional($user)->id;
-        if ($this->canManageAll($request, $bizId) && $request->filled('owner_user_id')) {
+        // Admin puede subir hacia un negocio específico (?business_id)
+        if ($this->isSuperAdmin($user) && $request->filled('business_id')) {
+            $request->validate(['business_id' => 'required|integer|exists:businesses,id']);
+            $bizId = (int) $request->input('business_id');
+        } else {
+            $bizId = $this->currentBusinessId($request);
+        }
+
+        // Determinar owner
+        $ownerId = (int) optional($user)->id;
+        if ($this->isSuperAdmin($user) && $request->filled('owner_user_id')) {
             $request->validate(['owner_user_id' => 'required|integer|exists:users,id']);
             $ownerId = (int) $request->input('owner_user_id');
         }
+
+        // Policy: create (admin de negocio o dueño==user)
+        $this->authorize('create', [MediaModel::class, $bizId, $ownerId]);
 
         // Normaliza a arreglo de UploadedFile
         $files = [];
@@ -320,7 +354,7 @@ class DocumentoController extends Controller
         foreach ($files as $idx => $file) {
             $tipo = $this->mapMimeToType($file->getMimeType());
 
-            // Crea contenedor Documento con negocio/owner (puede ser otro si admin lo indicó)
+            // Crea contenedor Documento con negocio/owner
             $doc = Documento::create([
                 'business_id'   => $bizId,
                 'owner_user_id' => $ownerId,
@@ -335,9 +369,8 @@ class DocumentoController extends Controller
                 ->preservingOriginal()
                 ->toMediaCollection($collection);
 
-            // Asegurar metadatos de negocio/owner en la media row
             if (is_null($media->business_id)) {
-                $media->business_id   = $bizId;
+                $media->business_id = $bizId;
             }
             $media->owner_user_id = $ownerId;
             $media->save();
@@ -383,13 +416,19 @@ class DocumentoController extends Controller
     // GET /api/media/{id}
     public function mediaShow(Request $request, $id)
     {
+        $user = $request->user();
+
+        if ($this->isSuperAdmin($user)) {
+            $media = MediaModel::findOrFail($id);
+            $this->authorize('view', $media);
+            return response()->json($this->mediaToResource($media));
+        }
+
         $bizId = $this->currentBusinessId($request);
         $media = MediaModel::where('business_id', $bizId)->findOrFail($id);
 
-        // ⬇️ Si NO puede gestionar todo, solo permite ver si es del mismo owner
-        if (!$this->canManageAll($request, $bizId) && $media->owner_user_id !== optional($request->user())->id) {
-            abort(403, 'No autorizado.');
-        }
+        // Policy: ver
+        $this->authorize('view', $media);
 
         return response()->json($this->mediaToResource($media));
     }
@@ -397,13 +436,16 @@ class DocumentoController extends Controller
     // PATCH /api/media/{id}
     public function mediaUpdate(Request $request, $id)
     {
-        $bizId = $this->currentBusinessId($request);
-        $media = MediaModel::where('business_id', $bizId)->findOrFail($id);
+        $user = $request->user();
 
-        // ⬇️ Solo admin/owner del negocio o propietario del archivo
-        if (!$this->canManageAll($request, $bizId) && $media->owner_user_id !== optional($request->user())->id) {
-            abort(403, 'No autorizado.');
+        if ($this->isSuperAdmin($user)) {
+            $media = MediaModel::findOrFail($id);
+        } else {
+            $bizId = $this->currentBusinessId($request);
+            $media = MediaModel::where('business_id', $bizId)->findOrFail($id);
         }
+
+        $this->authorize('update', $media);
 
         $request->validate([
             'name'  => 'sometimes|string|max:255',
@@ -436,13 +478,16 @@ class DocumentoController extends Controller
     // DELETE /api/media/{id}
     public function mediaDestroy(Request $request, $id)
     {
-        $bizId = $this->currentBusinessId($request);
-        $media = MediaModel::where('business_id', $bizId)->findOrFail($id);
+        $user = $request->user();
 
-        // ⬇️ Solo admin/owner del negocio o propietario del archivo
-        if (!$this->canManageAll($request, $bizId) && $media->owner_user_id !== optional($request->user())->id) {
-            abort(403, 'No autorizado.');
+        if ($this->isSuperAdmin($user)) {
+            $media = MediaModel::findOrFail($id);
+        } else {
+            $bizId = $this->currentBusinessId($request);
+            $media = MediaModel::where('business_id', $bizId)->findOrFail($id);
         }
+
+        $this->authorize('delete', $media);
 
         $bytes = (int) $media->size;
 
@@ -454,16 +499,19 @@ class DocumentoController extends Controller
         }
 
         // Actualiza usage_counters restando
-        DB::table('usage_counters')->updateOrInsert(
-            ['business_id' => $bizId],
-            ['created_at' => now(), 'updated_at' => now()]
-        );
+        $bizIdForCounters = (int) ($media->business_id ?? ($user?->active_business_id ?? 0));
+        if ($bizIdForCounters) {
+            DB::table('usage_counters')->updateOrInsert(
+                ['business_id' => $bizIdForCounters],
+                ['created_at' => now(), 'updated_at' => now()]
+            );
 
-        DB::table('usage_counters')->where('business_id', $bizId)->update([
-            'storage_bytes' => DB::raw('GREATEST(0, storage_bytes - '. $bytes .')'),
-            'assets_count'  => DB::raw('GREATEST(0, assets_count - 1)'),
-            'updated_at'    => now(),
-        ]);
+            DB::table('usage_counters')->where('business_id', $bizIdForCounters)->update([
+                'storage_bytes' => DB::raw('GREATEST(0, storage_bytes - '. $bytes .')'),
+                'assets_count'  => DB::raw('GREATEST(0, assets_count - 1)'),
+                'updated_at'    => now(),
+            ]);
+        }
 
         return response()->json(null, 204);
     }

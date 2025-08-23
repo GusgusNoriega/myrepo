@@ -247,14 +247,24 @@
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label class="text-sm text-gray-600">Featured media ID (opcional)</label>
-          <input id="featured_media_id" name="featured_media_id" type="number" min="1"
-                 class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm" placeholder="Ej: 10">
+          <input id="featured_media_id" name="featured_media_id" type="hidden"
+                 class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm" placeholder="Ej: 10"
+                 value=""
+                 data-mm="image"           
+                 data-mm-multiple="false"
+                 data-mm-preview="#selector"
+                 data-mm-title="Selecciona imagen de portada">
+                  <div id="selector" class="mt-2"></div>
           <p class="mt-1 text-xs text-gray-500">Ingresa un ID de la tabla <code>media</code>.</p>
         </div>
         <div>
           <label class="text-sm text-gray-600">Galería (IDs separados por coma)</label>
-          <input id="gallery_media_ids" name="gallery_media_ids" type="text"
-                 class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm" placeholder="11,12,13">
+          <input id="gallery_media_ids" name="gallery_media_ids" type="hidden"
+                 class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                 data-mm="image"
+                 data-mm-multiple="true"
+                 data-mm-title="Selecciona imágenes de la galería"
+                 >
           <p class="mt-1 text-xs text-gray-500">IDs de <code>media</code> separados por comas.</p>
         </div>
       </div>
@@ -685,4 +695,5 @@
     loadList();
   })();
 </script>
+ <x-media-manager :api-base="url('http://myrepo.test/api/media')" />
 @endsection

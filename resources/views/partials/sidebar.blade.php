@@ -146,15 +146,6 @@
           Ajustes
         </a>
       </li>
-      <li>
-        <a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-gray-100">
-          <svg class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path stroke-width="1.8" d="M7 3h6l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/>
-            <path stroke-width="1.8" d="M13 3v5h5"/>
-          </svg>
-          Documentos
-        </a>
-      </li>
     </ul>
   </nav>
   @else
@@ -218,63 +209,6 @@
         </a>
       </li>
     </ul>
-
-    <div class="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Suscripciones</div>
-    <ul class="space-y-1">
-      <li>
-        <a href="{{ route('admin.planes') }}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-gray-100">
-          <svg class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-                  d="M12 3l2 4 4 2-4 2-2 4-2-4-4-2 4-2 2-4Z"/>
-          </svg>
-          Planes
-        </a>
-      </li>
-      <li>
-        <a href="{{ route('admin.suscripciones') }}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-gray-100">
-          <svg class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <rect x="3" y="5" width="18" height="14" rx="2" stroke-width="1.8"/>
-            <path d="M3 10h18" stroke-width="1.8"/>
-          </svg>
-          Suscripciones
-        </a>
-      </li>
-      <li>
-        <a href="{{ route('admin.membresias') }}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-gray-100">
-          <svg class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <rect x="3" y="5" width="18" height="14" rx="2" stroke-width="1.8"/>
-            <path d="M3 10h18" stroke-width="1.8"/>
-          </svg>
-          Membresias
-        </a>
-      </li>
-    </ul>
-
-    <div class="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Seguridad</div>
-    <ul class="space-y-1">
-      <li>
-        <a href="{{ route('admin.usuarios') }}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-gray-100">
-          <svg class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-                  d="M16 14a4 4 0 1 1 6 3.464V20h-6v-2.536A4 4 0 0 1 16 14Z"/>
-            <circle cx="9" cy="8" r="4" stroke-width="1.8"/>
-            <path stroke-linecap="round" stroke-width="1.8" d="M15 20v-1a6 6 0 0 0-12 0v1h12Z"/>
-          </svg>
-          Usuarios
-        </a>
-      </li>
-      <li>
-        <a href="{{ route('admin.acl') }}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-gray-100">
-          <svg class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-                  d="M12 3l8 4v6c0 4-3 7-8 8-5-1-8-4-8-8V7l8-4Z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4"/>
-          </svg>
-          Roles & Permisos
-        </a>
-      </li>
-    </ul>
-
     <div class="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Sistema</div>
     <ul class="space-y-1">
       <li>
@@ -287,15 +221,7 @@
           Ajustes
         </a>
       </li>
-      <li>
-        <a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-gray-100">
-          <svg class="h-5 w-5 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path stroke-width="1.8" d="M7 3h6l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/>
-            <path stroke-width="1.8" d="M13 3v5h5"/>
-          </svg>
-          Documentos
-        </a>
-      </li>
+    
     </ul>
   </nav>
     

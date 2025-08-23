@@ -105,7 +105,7 @@ class ProductController extends Controller
             ])->toArray());
 
             $this->syncFeatured($product, $data['featured_media_id'] ?? null);
-            $this->syncGallery($product, $data['gallery_media_ids'] ?? '');
+            $this->syncGallery($product, $data['gallery_media_ids'] ?? null);
 
             $this->adjustProductsCounter($bizId, +1);
 
@@ -221,7 +221,7 @@ class ProductController extends Controller
 
             // Media
             'featured_media_id'  => ['nullable','integer','exists:media,id'],
-            'gallery_media_ids'  => ['nullable','string'], // CSV "11,12,13"
+            'gallery_media_ids'  => ['nullable'], // CSV "11,12,13"
         ]);
     }
 
@@ -260,28 +260,49 @@ class ProductController extends Controller
         $link->save();
     }
 
-    private function syncGallery(Product $product, ?string $csvIds): void
+    private function parseGalleryIds($input)
     {
-        if ($csvIds === null) return; // no tocar galería si no vino
+        if ($input === null) {
+            return null;
+        }
+        if (is_array($input)) {
+            $arr = $input;
+        } else {
+            $s = trim((string) $input);
+            if ($s === '') {
+                $arr = [];
+            } elseif (str_starts_with($s, '[') && str_ends_with($s, ']')) {
+                $decoded = json_decode($s, true);
+                $arr = is_array($decoded) ? $decoded : [];
+            } else {
+                $arr = array_map('trim', explode(',', $s));
+            }
+        }
+        return collect($arr)
+            ->filter(fn($v) => $v !== '' && is_numeric($v))
+            ->map(fn($v) => (int) $v)
+            ->unique()
+            ->values();
+    }
+
+    private function syncGallery(Product $product, $raw): void
+    {
+        if ($raw === null) return;
+
         $product->mediaLinks()->update(['is_gallery' => false, 'position' => null]);
 
-        $ids = collect(explode(',', (string)$csvIds))
-            ->map(fn($v)=>trim($v))
-            ->filter(fn($v)=>$v !== '')
-            ->map(fn($v)=>(int)$v)
-            ->unique()->values();
+        $ids = $this->parseGalleryIds($raw);
 
         foreach ($ids as $i => $mediaId) {
-            $media = Media::query()->find($mediaId);
+            $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::query()->find($mediaId);
             if (!$media) continue;
 
-            // ---- Si Media tiene business_id, debe coincidir
             if (isset($media->business_id) && (int)$media->business_id !== (int)$product->business_id) {
                 abort(422, 'Una de las medias de la galería no pertenece a este negocio.');
             }
 
-            $link = MediaLink::firstOrNew([
-                'linkable_type' => Product::class,
+            $link = \App\Models\MediaLink::firstOrNew([
+                'linkable_type' => \App\Models\Product::class,
                 'linkable_id'   => $product->id,
                 'media_id'      => $media->id,
             ]);
