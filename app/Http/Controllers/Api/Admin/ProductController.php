@@ -16,8 +16,11 @@ class ProductController extends Controller
 {
     public function __construct()
     {
-        // Aplica ProductPolicy automáticamente (viewAny, view, create, update, delete)
-        $this->authorizeResource(Product::class, 'product');
+        $this->authorizeResource(Product::class, 'product', [
+            'except' => ['show'],
+        ]);
+        $this->middleware('auth:api')->except(['show', 'publicIndexByBusiness']);
+
     }
 
     // ========== LIST ==========
@@ -364,5 +367,70 @@ class ProductController extends Controller
                 'products_count' => DB::raw('GREATEST(0, products_count + ('.(int)$delta.'))'),
                 'updated_at'     => now(),
             ]);
+    }
+
+    /**
+     * Listado PÚBLICO de productos por negocio (sin auth).
+     * GET /api/public/businesses/{business}/products
+     */
+    public function publicIndexByBusiness(Request $request, int $business)
+    {
+        // Validación de filtros
+        $request->validate([
+            'per_page'         => ['nullable','integer','min:1','max:100'],
+            'search'           => ['nullable','string'],
+            'category_id'      => ['nullable','integer','exists:categories,id'],
+            'price_cents_min'  => ['nullable','integer','min:0'],
+            'price_cents_max'  => ['nullable','integer','min:0'],
+            'sort'             => ['nullable', Rule::in(['newest','price_asc','price_desc','name_asc'])],
+        ]);
+
+        $q = Product::query()
+            ->where('business_id', $business)
+            ->where('status', 'active'); // evita exponer borradores/archivados
+
+        if ($s = $request->query('search')) {
+            $q->where(function ($qq) use ($s) {
+                $qq->where('name','like',"%{$s}%")
+                ->orWhere('sku','like',"%{$s}%")
+                ->orWhere('slug','like',"%{$s}%");
+            });
+        }
+
+        if ($request->filled('category_id')) {
+            $q->where('category_id', $request->integer('category_id'));
+        }
+
+        if ($request->filled('price_cents_min')) {
+            $q->where('price_cents', '>=', $request->integer('price_cents_min'));
+        }
+        if ($request->filled('price_cents_max')) {
+            $q->where('price_cents', '<=', $request->integer('price_cents_max'));
+        }
+
+        // Ordenamiento
+        switch ($request->query('sort')) {
+            case 'price_asc':  $q->orderBy('price_cents', 'asc'); break;
+            case 'price_desc': $q->orderBy('price_cents', 'desc'); break;
+            case 'name_asc':   $q->orderBy('name', 'asc'); break;
+            default:           $q->orderByDesc('created_at'); // newest
+        }
+
+        $p = $q->paginate($request->integer('per_page', 20))
+            ->appends($request->all());
+
+        $data = collect($p->items())->map(function (Product $product) {
+            return $this->serializeProduct($product);
+        })->values();
+
+        return response()->json([
+            'data' => $data,
+            'meta' => [
+                'current_page' => $p->currentPage(),
+                'last_page'    => $p->lastPage(),
+                'per_page'     => $p->perPage(),
+                'total'        => $p->total(),
+            ],
+        ]);
     }
 }

@@ -71,10 +71,21 @@ Route::prefix('admin')
         Route::put('users/{user}/permissions', [AclUserController::class, 'syncPermissions']);
     });
 
-Route::middleware(['auth:api'])
+Route::prefix('admin')->group(function () {
+    Route::apiResource('products', ProductController::class)->only('show');
+});
+
+
+// PÚBLICA
+Route::prefix('public')->group(function () {
+    Route::get('businesses/{business}/products', [ProductController::class, 'publicIndexByBusiness'])
+        ->name('public.products.byBusiness');
+});
+
+Route::middleware('auth:api')
     ->prefix('admin')
     ->group(function () {
-        Route::apiResource('products', ProductController::class);
+        Route::apiResource('products', ProductController::class)->except('show');
     });
 
 Route::middleware(['auth:api']) // agrega tu middleware/permiso de admin aquí

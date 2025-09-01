@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DocumentoController;
 use L5Swagger\Http\Controllers\SwaggerController;
+use App\Http\Controllers\Web\StorefrontController;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,6 +53,12 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
      ->name('logout')           //  ➜ route('logout')
      ->middleware('auth');      //  Solo usuarios logueados
+
+Route::get('/negocio/{business}', [StorefrontController::class, 'show'])
+     ->name('storefront.business'); // pública
+// Detalle público de producto
+Route::get('/producto/{product}', [StorefrontController::class, 'product'])
+     ->name('storefront.product');
 
 
 // Muestra la pantalla (requiere estar autenticado en 'web')
